@@ -67,7 +67,7 @@ export async function changePasswordAction(formData: FormData) {
   if (signInErr) return { error: 'Current password is incorrect.' }
 
   // Update password via admin
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
   const { error: updateErr } = await admin.auth.admin.updateUserById(user.id, {
     password: new_password,
   })
@@ -85,7 +85,7 @@ export async function updateProfileAction(formData: FormData) {
   const { data: { user }, error: userErr } = await serverClient.auth.getUser()
   if (userErr || !user) return { error: 'Not authenticated.' }
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
   const { error } = await (admin.from('profiles' as any) as any)
     .update({ full_name: full_name.trim() })
     .eq('id', user.id)

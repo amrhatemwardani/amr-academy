@@ -9,20 +9,13 @@ const studentSchema = z.object({
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z.string().optional().nullable(),
   parentPhone: z.string().optional().nullable(),
-  email: z
-    .string()
-    .optional()
-    .nullable()
-    .transform((val) => (val && val.trim() ? val.trim() : null)),
-  classIds: z
-    .array(z.string())
-    .default([])
-    .transform((arr) => arr.filter((id) => Boolean(id) && id.length > 10)),
+  email: z.string().optional().nullable(),
+  classIds: z.array(z.string()).optional().default([]),
   password: z.string().min(6, 'Password must be at least 6 characters').default('Student@123456'),
   mustChangePassword: z.boolean().default(false),
 })
 
-export type CreateStudentInput = z.infer<typeof studentSchema>
+export type CreateStudentInput = z.input<typeof studentSchema>
 
 /**
  * Generates the next student code by querying existing codes and ensuring no Auth collision
@@ -126,8 +119,9 @@ export async function createStudentAction(input: CreateStudentInput, locale = 'e
     }
 
     // 5. Enroll in selected classes
-    if (parsed.classIds && parsed.classIds.length > 0) {
-      const enrollments = parsed.classIds.map((cid) => ({
+    const validClassIds = (parsed.classIds || []).filter((cid) => Boolean(cid) && cid.length > 10)
+    if (validClassIds.length > 0) {
+      const enrollments = validClassIds.map((cid) => ({
         class_id: cid,
         student_id: studentId,
         enrolled_on: new Date().toISOString().slice(0, 10),

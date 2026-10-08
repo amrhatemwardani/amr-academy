@@ -37,7 +37,7 @@ export async function changeStudentPasswordAction(formData: FormData) {
   }
 
   // Update password
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
   const { error: updateErr } = await admin.auth.admin.updateUserById(user.id, {
     password: newPassword,
   })
