@@ -9,8 +9,15 @@ const studentSchema = z.object({
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z.string().optional().nullable(),
   parentPhone: z.string().optional().nullable(),
-  email: z.string().email().optional().or(z.literal('')).nullable(),
-  classIds: z.array(z.string().uuid()).default([]),
+  email: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val && val.trim() ? val.trim() : null)),
+  classIds: z
+    .array(z.string())
+    .default([])
+    .transform((arr) => arr.filter((id) => Boolean(id) && id.length > 10)),
   password: z.string().min(6, 'Password must be at least 6 characters').default('Student@123456'),
   mustChangePassword: z.boolean().default(false),
 })
@@ -18,25 +25,38 @@ const studentSchema = z.object({
 export type CreateStudentInput = z.infer<typeof studentSchema>
 
 /**
- * Generates the next student code by querying existing codes
+ * Generates the next student code by querying existing codes and ensuring no Auth collision
  */
 async function getNextStudentCode(): Promise<string> {
   const admin = createAdminClient()
   const { data } = await (admin.from('students' as any) as any)
     .select('student_code')
     .order('student_code', { ascending: false })
-    .limit(1)
+    .limit(20)
 
+  let maxNum = 1000
   if (data && data.length > 0) {
-    const lastCode = data[0].student_code
-    const match = String(lastCode).match(/\d+/)
-    if (match) {
-      const nextNum = parseInt(match[0], 10) + 1
-      return `S${nextNum}`
+    for (const row of data) {
+      const match = String(row.student_code).match(/\d+/)
+      if (match) {
+        const n = parseInt(match[0], 10)
+        if (!isNaN(n) && n > maxNum && n < 20000000) maxNum = n
+      }
     }
   }
 
-  return 'S1001'
+  // Check auth users to avoid collision with any existing auth emails like S1001@students.local
+  const { data: authList } = await admin.auth.admin.listUsers({ perPage: 100 })
+  const existingEmails = new Set(
+    (authList?.users || []).map((u) => (u.email || '').toLowerCase())
+  )
+
+  let nextNum = maxNum + 1
+  while (existingEmails.has(`s${nextNum}@students.local`)) {
+    nextNum++
+  }
+
+  return `S${nextNum}`
 }
 
 /**
