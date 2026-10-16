@@ -14,7 +14,7 @@ export default async function StudentMessagesPage({
   const { locale } = await params
   const user = await requireStudent(locale)
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // Find teacher name
   const { data: teacher } = await (admin.from('profiles' as any) as any)

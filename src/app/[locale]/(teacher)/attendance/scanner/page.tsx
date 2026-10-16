@@ -13,7 +13,7 @@ export default async function AttendanceScannerPage({
   const { locale } = await params
   await requireTeacher(locale)
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // 1. Fetch active classes with student counts
   const { data: rawClasses } = await (admin.from('classes' as any) as any)

@@ -8,7 +8,7 @@ export async function getCalendarEvents({
   role: 'teacher' | 'student'
   studentId?: string
 }): Promise<CalendarEvent[]> {
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
   const events: CalendarEvent[] = []
 
   // 1. Fetch classes

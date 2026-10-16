@@ -14,7 +14,7 @@ export default async function AssignmentSubmissionsPage({
 }) {
   const { locale, assignmentId } = await params
   await requireTeacher(locale)
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
   const isAr = locale === 'ar'
 
   // Fetch assignment details

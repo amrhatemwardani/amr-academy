@@ -14,7 +14,7 @@ export default async function TeacherMessagesPage({
   const { locale } = await params
   const user = await requireTeacher(locale)
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // 1. Fetch conversations summary
   const conversations = await getTeacherConversations()

@@ -13,7 +13,7 @@ export default async function ExamsPage({
   const { locale } = await params
   await requireTeacher(locale)
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // Fetch exams with submission counts and results
   const { data: rawExams } = await (admin.from('exams' as any) as any)

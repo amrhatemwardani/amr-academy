@@ -9,7 +9,7 @@ export async function markAllNotificationsReadAction() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   const { error } = await (admin.from('notifications' as any) as any)
     .update({ read_at: new Date().toISOString() })
@@ -31,7 +31,7 @@ export async function deleteNotificationAction(notificationId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   const { error } = await (admin.from('notifications' as any) as any)
     .delete()

@@ -13,7 +13,7 @@ export default async function StudentProfilePage({
   const { locale } = await params
   const user = await requireStudent(locale)
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // Fetch full student & profile record
   const { data: profile } = await (admin.from('profiles' as any) as any)

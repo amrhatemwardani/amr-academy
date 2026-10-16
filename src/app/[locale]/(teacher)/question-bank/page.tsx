@@ -14,7 +14,7 @@ export default async function QuestionBankPage({
   const { locale } = await params
   await requireTeacher(locale)
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // Fetch questions with options and keys
   const { data: rawQuestions } = await (admin.from('questions' as any) as any)

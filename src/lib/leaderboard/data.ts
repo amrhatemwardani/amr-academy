@@ -5,7 +5,7 @@ export async function getLeaderboardData(): Promise<{
   classes: { id: string; name: string }[]
   students: LeaderboardStudent[]
 }> {
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // 1. Fetch active classes
   const { data: rawClasses } = await (admin.from('classes' as any) as any)

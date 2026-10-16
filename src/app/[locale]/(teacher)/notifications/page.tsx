@@ -13,7 +13,7 @@ export default async function TeacherNotificationsPage({
   const { locale } = await params
   const user = await requireTeacher(locale)
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // Fetch notifications for teacher
   const { data: rawNotifications } = await (admin.from('notifications' as any) as any)

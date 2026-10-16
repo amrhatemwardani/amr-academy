@@ -39,7 +39,7 @@ export async function sendMessageAction({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated.' }
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // Get current user profile
   const { data: profile } = await (admin.from('profiles' as any) as any)
@@ -96,7 +96,7 @@ export async function sendMessageAction({
 
 // ── Get Messages for a Student ────────────────────────────────────────
 export async function getStudentMessages(studentId: string): Promise<ChatMessage[]> {
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   const { data, error } = await (admin.from('notifications' as any) as any)
     .select('id, user_id, title, body, read_at, metadata, created_at')
@@ -120,7 +120,7 @@ export async function getStudentMessages(studentId: string): Promise<ChatMessage
 
 // ── Mark Messages as Read ─────────────────────────────────────────────
 export async function markMessagesReadAction(studentId: string, currentUserId: string) {
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   await (admin.from('notifications' as any) as any)
     .update({ read_at: new Date().toISOString() })
@@ -134,7 +134,7 @@ export async function markMessagesReadAction(studentId: string, currentUserId: s
 
 // ── Get All Conversations for Teacher ─────────────────────────────────
 export async function getTeacherConversations(): Promise<ConversationSummary[]> {
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // Get all chat messages
   const { data: messages } = await (admin.from('notifications' as any) as any)

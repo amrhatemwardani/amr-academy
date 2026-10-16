@@ -455,8 +455,8 @@ export function StudentsClientView({ initialStudents, classes }: StudentsClientV
         </span>
       </div>
 
-      {/* Students Table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+      {/* Students Table (Desktop) */}
+      <div className="hidden md:block rounded-xl border border-border bg-card overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-start">
             <thead className="bg-muted/50 border-b border-border text-xs text-muted-foreground">
@@ -738,6 +738,186 @@ export function StudentsClientView({ initialStudents, classes }: StudentsClientV
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Mobile Students Card List (< 768px) */}
+      <div className="block md:hidden space-y-3">
+        {filteredStudents.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-muted-foreground">
+            <p className="text-base font-semibold">{isAr ? 'لم يتم العثور على طلاب' : 'No students found'}</p>
+            <p className="text-xs mt-1">
+              {isAr ? 'جرب تغيير شروط البحث أو الفلترة' : 'Try adjusting your search or filters'}
+            </p>
+          </div>
+        ) : (
+          filteredStudents.map((s) => {
+            const isSelected = selectedIds.has(s.id)
+            return (
+              <div
+                key={s.id}
+                className={`rounded-xl border p-4 bg-card shadow-sm space-y-3 transition-colors ${
+                  isSelected ? 'border-primary ring-1 ring-primary bg-primary/5' : 'border-border'
+                }`}
+              >
+                {/* Top row: Checkbox, Avatar, Name, and Status */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => handleToggleSelectRow(s.id)}
+                      aria-label={`Select ${s.full_name}`}
+                    />
+                    <Avatar className="h-9 w-9 border border-border shrink-0">
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
+                        {getInitials(s.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <Link
+                        href={`/${locale}/students/${s.id}`}
+                        className="font-bold text-sm text-foreground hover:text-primary transition-colors block truncate"
+                      >
+                        {s.full_name}
+                      </Link>
+                      <button
+                        onClick={() => handleCopy(s.student_code)}
+                        className="inline-flex items-center gap-1 font-mono text-xs text-muted-foreground hover:text-primary mt-0.5"
+                      >
+                        <span>#{s.student_code}</span>
+                        {copiedCode === s.student_code ? (
+                          <Check className="h-3 w-3 text-emerald-500" />
+                        ) : (
+                          <Copy className="h-3 w-3 opacity-60" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Status Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="cursor-pointer focus:outline-none shrink-0">
+                        <Badge
+                          variant={
+                            s.status === 'active'
+                              ? 'default'
+                              : s.status === 'inactive'
+                              ? 'secondary'
+                              : 'outline'
+                          }
+                          className={`gap-1 cursor-pointer text-[10px] ${
+                            s.status === 'active'
+                              ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                              : s.status === 'inactive'
+                              ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30'
+                              : 'bg-muted text-muted-foreground'
+                          }`}
+                        >
+                          <span>
+                            {s.status === 'active'
+                              ? isAr ? 'نشط' : 'Active'
+                              : s.status === 'inactive'
+                              ? isAr ? 'معلق' : 'Suspended'
+                              : isAr ? 'مؤرشف' : 'Archived'}
+                          </span>
+                          <ChevronDown className="h-2.5 w-2.5 opacity-60" />
+                        </Badge>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-44">
+                      <DropdownMenuItem onClick={() => handleQuickStatusChange(s.id, 'active')}>
+                        <UserCheck className="h-4 w-4 text-emerald-600 me-2" />
+                        <span>{isAr ? 'تفعيل' : 'Activate'}</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleQuickStatusChange(s.id, 'inactive')}>
+                        <UserX className="h-4 w-4 text-amber-600 me-2" />
+                        <span>{isAr ? 'حظر / تعليق' : 'Suspend'}</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleQuickStatusChange(s.id, 'archived')}>
+                        <Archive className="h-4 w-4 text-muted-foreground me-2" />
+                        <span>{isAr ? 'أرشفة' : 'Archive'}</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {/* Enrolled Classes */}
+                {s.classes.length > 0 && (
+                  <div className="flex flex-wrap gap-1 pt-1 border-t border-border/60">
+                    {s.classes.map((c) => (
+                      <Badge key={c.id} variant="secondary" className="text-[10px] font-normal gap-1">
+                        <GraduationCap className="h-3 w-3 opacity-60" />
+                        <span>{c.name.split(' - ')[0]}</span>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+
+                {/* Quick Touch Action Buttons */}
+                <div className="flex items-center gap-2 pt-1 border-t border-border/60">
+                  {s.phone && (
+                    <a
+                      href={`tel:${s.phone}`}
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg bg-muted text-foreground text-xs font-semibold hover:bg-muted/80 transition-colors"
+                    >
+                      <Phone className="h-3.5 w-3.5" />
+                      <span>{isAr ? 'اتصال' : 'Call'}</span>
+                    </a>
+                  )}
+
+                  {s.parent_phone && (
+                    <a
+                      href={`https://wa.me/2${s.parent_phone.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition-colors"
+                    >
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      <span>{isAr ? 'واتساب' : 'WhatsApp'}</span>
+                    </a>
+                  )}
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9 px-3"
+                    onClick={() => {
+                      setEditingStudent(s)
+                      setEditOpen(true)
+                    }}
+                  >
+                    <Edit className="h-3.5 w-3.5" />
+                  </Button>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-9 px-2">
+                        <MoreVertical className="h-3.5 w-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem
+                        onSelect={() => router.push(`/${locale}/students/${s.id}`)}
+                        className="gap-2 text-primary font-semibold"
+                      >
+                        <Eye className="h-4 w-4" />
+                        <span>{isAr ? 'الملف الأكاديمي الشامل' : 'Full Dossier'}</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setStudentToDelete(s)}
+                        className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span>{isAr ? 'حذف الحساب...' : 'Delete Account...'}</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            )
+          })
+        )}
       </div>
 
       {/* Edit Student Dialog */}

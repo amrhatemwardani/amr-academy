@@ -13,7 +13,7 @@ export default async function StudentIDCardPage({
   const { locale } = await params
   const user = await requireStudent(locale)
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // 1. Fetch student info
   const { data: student } = await (admin.from('students' as any) as any)

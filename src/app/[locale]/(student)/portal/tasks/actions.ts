@@ -12,7 +12,7 @@ export async function submitAssignmentAction(
 ) {
   try {
     const user = await requireStudent(locale)
-    const admin = await createAdminClient()
+    const admin = createAdminClient()
 
     // Check if already submitted
     const { data: existing } = await (admin.from('assignment_submissions' as any) as any)

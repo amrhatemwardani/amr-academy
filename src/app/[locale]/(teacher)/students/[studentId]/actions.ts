@@ -12,7 +12,7 @@ export async function addStudentNoteAction(studentId: string, noteText: string) 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated.' }
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   const { data, error } = await (admin.from('student_notes' as any) as any)
     .insert({
@@ -32,7 +32,7 @@ export async function addStudentNoteAction(studentId: string, noteText: string) 
 }
 
 export async function deleteStudentNoteAction(noteId: string, studentId: string) {
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   const { error } = await (admin.from('student_notes' as any) as any)
     .delete()

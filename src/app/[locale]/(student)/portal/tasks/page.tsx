@@ -12,7 +12,7 @@ export default async function StudentTasksPage({
 }) {
   const { locale } = await params
   const user = await requireStudent(locale)
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // Get enrolled class IDs
   const { data: rawEnrollments } = await (admin.from('enrollments' as any) as any)

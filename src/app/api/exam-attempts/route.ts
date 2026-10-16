@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   const examId = request.nextUrl.searchParams.get('examId')
   if (!examId) return NextResponse.json({ error: 'examId required' }, { status: 400 })
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // Fetch all attempts for this exam with results and student info
   const { data: rawAttempts, error } = await (admin.from('exam_attempts' as any) as any)

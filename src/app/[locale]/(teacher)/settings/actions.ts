@@ -14,7 +14,7 @@ export async function saveSettingsAction(formData: FormData) {
 
   if (!school_name?.trim()) return { error: 'School name is required.' }
 
-  const supabase = await createAdminClient()
+  const supabase = createAdminClient()
 
   // Upsert settings row (assume single-row settings table with id=1)
   const { error } = await (supabase.from('settings' as any) as any).upsert(

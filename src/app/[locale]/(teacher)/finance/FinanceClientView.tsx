@@ -256,143 +256,263 @@ export function FinanceClientView({
         </div>
       </div>
 
-      {/* Tab 1: Charges Table */}
+      {/* Tab 1: Charges Table (Desktop) */}
       {activeTab === 'charges' && (
-        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-start">
-              <thead className="bg-muted/50 border-b border-border text-xs text-muted-foreground">
-                <tr>
-                  <th className="p-3 text-start">{isAr ? 'الطالب' : 'Student'}</th>
-                  <th className="p-3 text-start">{isAr ? 'الفصل' : 'Class'}</th>
-                  <th className="p-3 text-start">{isAr ? 'البيان' : 'Description'}</th>
-                  <th className="p-3 text-start">{isAr ? 'المبلغ' : 'Amount'}</th>
-                  <th className="p-3 text-start">{isAr ? 'المسدد' : 'Paid'}</th>
-                  <th className="p-3 text-start">{isAr ? 'المتبقي' : 'Remaining'}</th>
-                  <th className="p-3 text-start">{isAr ? 'الحالة' : 'Status'}</th>
-                  <th className="p-3 text-end">{isAr ? 'تاريخ الاستحقاق' : 'Due Date'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredCharges.length === 0 ? (
+        <>
+          <div className="hidden md:block rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-start">
+                <thead className="bg-muted/50 border-b border-border text-xs text-muted-foreground">
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-muted-foreground">
-                      <p className="text-base font-semibold">{isAr ? 'لا توجد مطالبات' : 'No charges found'}</p>
-                    </td>
+                    <th className="p-3 text-start">{isAr ? 'الطالب' : 'Student'}</th>
+                    <th className="p-3 text-start">{isAr ? 'الفصل' : 'Class'}</th>
+                    <th className="p-3 text-start">{isAr ? 'البيان' : 'Description'}</th>
+                    <th className="p-3 text-start">{isAr ? 'المبلغ' : 'Amount'}</th>
+                    <th className="p-3 text-start">{isAr ? 'المسدد' : 'Paid'}</th>
+                    <th className="p-3 text-start">{isAr ? 'المتبقي' : 'Remaining'}</th>
+                    <th className="p-3 text-start">{isAr ? 'الحالة' : 'Status'}</th>
+                    <th className="p-3 text-end">{isAr ? 'تاريخ الاستحقاق' : 'Due Date'}</th>
                   </tr>
-                ) : (
-                  filteredCharges.map((c) => (
-                    <tr key={c.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="p-3 font-medium">
-                        <p className="text-foreground">{c.student_name}</p>
-                        <span className="font-mono text-xs text-muted-foreground">{c.student_code}</span>
-                      </td>
-                      <td className="p-3 text-xs text-muted-foreground">{c.class_name}</td>
-                      <td className="p-3 text-xs">{c.description}</td>
-                      <td className="p-3 font-bold text-foreground">{c.amount} EGP</td>
-                      <td className="p-3 text-emerald-600 dark:text-emerald-400 font-medium">
-                        {c.paid_amount} EGP
-                      </td>
-                      <td className="p-3 font-bold text-rose-600 dark:text-rose-400">
-                        {c.remaining} EGP
-                      </td>
-                      <td className="p-3">
-                        <Badge
-                          variant={c.status === 'paid' ? 'default' : 'secondary'}
-                          className={
-                            c.status === 'paid'
-                              ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
-                              : c.status === 'partially_paid'
-                              ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30'
-                              : 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30'
-                          }
-                        >
-                          {c.status === 'paid'
-                            ? isAr ? 'مسدد' : 'Paid'
-                            : c.status === 'partially_paid'
-                            ? isAr ? 'سداد جزئي' : 'Partial'
-                            : isAr ? 'غير مسدد' : 'Unpaid'}
-                        </Badge>
-                      </td>
-                      <td className="p-3 text-end font-mono text-xs text-muted-foreground">
-                        {c.due_date}
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredCharges.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                        <p className="text-base font-semibold">{isAr ? 'لا توجد مطالبات' : 'No charges found'}</p>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    filteredCharges.map((c) => (
+                      <tr key={c.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="p-3 font-medium">
+                          <p className="text-foreground">{c.student_name}</p>
+                          <span className="font-mono text-xs text-muted-foreground">{c.student_code}</span>
+                        </td>
+                        <td className="p-3 text-xs text-muted-foreground">{c.class_name}</td>
+                        <td className="p-3 text-xs">{c.description}</td>
+                        <td className="p-3 font-bold text-foreground">{c.amount} EGP</td>
+                        <td className="p-3 text-emerald-600 dark:text-emerald-400 font-medium">
+                          {c.paid_amount} EGP
+                        </td>
+                        <td className="p-3 font-bold text-rose-600 dark:text-rose-400">
+                          {c.remaining} EGP
+                        </td>
+                        <td className="p-3">
+                          <Badge
+                            variant={c.status === 'paid' ? 'default' : 'secondary'}
+                            className={
+                              c.status === 'paid'
+                                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                                : c.status === 'partially_paid'
+                                ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30'
+                                : 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30'
+                            }
+                          >
+                            {c.status === 'paid'
+                              ? isAr ? 'مسدد' : 'Paid'
+                              : c.status === 'partially_paid'
+                              ? isAr ? 'سداد جزئي' : 'Partial'
+                              : isAr ? 'غير مسدد' : 'Unpaid'}
+                          </Badge>
+                        </td>
+                        <td className="p-3 text-end font-mono text-xs text-muted-foreground">
+                          {c.due_date}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Charges Mobile Cards (< 768px) */}
+          <div className="block md:hidden space-y-3">
+            {filteredCharges.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-muted-foreground">
+                <p className="text-base font-semibold">{isAr ? 'لا توجد مطالبات' : 'No charges found'}</p>
+              </div>
+            ) : (
+              filteredCharges.map((c) => (
+                <div key={c.id} className="rounded-xl border border-border p-4 bg-card shadow-sm space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-bold text-sm text-foreground">{c.student_name}</p>
+                      <span className="font-mono text-xs text-muted-foreground">#{c.student_code}</span>
+                    </div>
+                    <Badge
+                      variant={c.status === 'paid' ? 'default' : 'secondary'}
+                      className={`text-[10px] ${
+                        c.status === 'paid'
+                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                          : c.status === 'partially_paid'
+                          ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30'
+                          : 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30'
+                      }`}
+                    >
+                      {c.status === 'paid'
+                        ? isAr ? 'مسدد' : 'Paid'
+                        : c.status === 'partially_paid'
+                        ? isAr ? 'سداد جزئي' : 'Partial'
+                        : isAr ? 'غير مسدد' : 'Unpaid'}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/60">
+                    <span>{c.class_name || (isAr ? 'حصة دراسية' : 'Class')}</span>
+                    <span>{isAr ? 'الاستحقاق: ' : 'Due: '}{c.due_date}</span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 pt-1 text-center bg-muted/40 p-2 rounded-lg">
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">{isAr ? 'المطلوب' : 'Amount'}</p>
+                      <p className="text-xs font-bold text-foreground">{c.amount} EGP</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">{isAr ? 'المسدد' : 'Paid'}</p>
+                      <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{c.paid_amount} EGP</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-muted-foreground">{isAr ? 'المتبقي' : 'Remaining'}</p>
+                      <p className="text-xs font-bold text-rose-600 dark:text-rose-400">{c.remaining} EGP</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </>
       )}
 
       {/* Tab 2: Payments & Receipts */}
       {activeTab === 'payments' && (
-        <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-start">
-              <thead className="bg-muted/50 border-b border-border text-xs text-muted-foreground">
-                <tr>
-                  <th className="p-3 text-start">{isAr ? 'رقم الإيصال' : 'Receipt No'}</th>
-                  <th className="p-3 text-start">{isAr ? 'الطالب' : 'Student'}</th>
-                  <th className="p-3 text-start">{isAr ? 'المبلغ المستلم' : 'Amount'}</th>
-                  <th className="p-3 text-start">{isAr ? 'طريقة الدفع' : 'Method'}</th>
-                  <th className="p-3 text-start">{isAr ? 'تاريخ الدفع' : 'Paid At'}</th>
-                  <th className="p-3 text-end">{isAr ? 'إجراءات' : 'Actions'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredPayments.length === 0 ? (
+        <>
+          <div className="hidden md:block rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-start">
+                <thead className="bg-muted/50 border-b border-border text-xs text-muted-foreground">
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                      <p className="text-base font-semibold">{isAr ? 'لا توجد مدفوعات مسجلة' : 'No payments found'}</p>
-                    </td>
+                    <th className="p-3 text-start">{isAr ? 'رقم الإيصال' : 'Receipt No'}</th>
+                    <th className="p-3 text-start">{isAr ? 'الطالب' : 'Student'}</th>
+                    <th className="p-3 text-start">{isAr ? 'المبلغ المستلم' : 'Amount'}</th>
+                    <th className="p-3 text-start">{isAr ? 'طريقة الدفع' : 'Method'}</th>
+                    <th className="p-3 text-start">{isAr ? 'تاريخ الدفع' : 'Paid At'}</th>
+                    <th className="p-3 text-end">{isAr ? 'إجراءات' : 'Actions'}</th>
                   </tr>
-                ) : (
-                  filteredPayments.map((p) => {
-                    const isVoided = !!p.voided_at
-                    return (
-                      <tr key={p.id} className={`hover:bg-muted/30 transition-colors ${isVoided ? 'opacity-50 line-through' : ''}`}>
-                        <td className="p-3 font-mono font-bold text-primary">
-                          {p.receipt_no}
-                        </td>
-                        <td className="p-3 font-medium">
-                          {p.student_name} ({p.student_code})
-                        </td>
-                        <td className="p-3 font-bold text-emerald-600 dark:text-emerald-400">
-                          {p.amount} EGP
-                        </td>
-                        <td className="p-3 text-xs capitalize text-muted-foreground">
-                          {p.method.replace('_', ' ')}
-                        </td>
-                        <td className="p-3 text-xs font-mono text-muted-foreground">
-                          {new Date(p.paid_at).toLocaleDateString()}
-                        </td>
-                        <td className="p-3 text-end">
-                          {!isVoided ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive h-8"
-                              onClick={() => handleVoidPayment(p.id)}
-                              loading={voidingId === p.id}
-                            >
-                              {isAr ? 'إلغاء الإيصال' : 'Void'}
-                            </Button>
-                          ) : (
-                            <Badge variant="outline" className="text-[10px] text-destructive border-destructive/30">
-                              {isAr ? 'ملغى' : 'Voided'}
-                            </Badge>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredPayments.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                        <p className="text-base font-semibold">{isAr ? 'لا توجد مدفوعات مسجلة' : 'No payments found'}</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredPayments.map((p) => {
+                      const isVoided = !!p.voided_at
+                      return (
+                        <tr key={p.id} className={`hover:bg-muted/30 transition-colors ${isVoided ? 'opacity-50 line-through' : ''}`}>
+                          <td className="p-3 font-mono font-bold text-primary">
+                            {p.receipt_no}
+                          </td>
+                          <td className="p-3 font-medium">
+                            {p.student_name} ({p.student_code})
+                          </td>
+                          <td className="p-3 font-bold text-emerald-600 dark:text-emerald-400">
+                            {p.amount} EGP
+                          </td>
+                          <td className="p-3 text-xs capitalize text-muted-foreground">
+                            {p.method.replace('_', ' ')}
+                          </td>
+                          <td className="p-3 text-xs font-mono text-muted-foreground">
+                            {new Date(p.paid_at).toLocaleDateString()}
+                          </td>
+                          <td className="p-3 text-end">
+                            {!isVoided ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive h-8"
+                                onClick={() => handleVoidPayment(p.id)}
+                                loading={voidingId === p.id}
+                              >
+                                {isAr ? 'إلغاء الإيصال' : 'Void'}
+                              </Button>
+                            ) : (
+                              <Badge variant="outline" className="text-[10px] text-destructive border-destructive/30">
+                                {isAr ? 'ملغى' : 'Voided'}
+                              </Badge>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Payments Mobile Cards (< 768px) */}
+          <div className="block md:hidden space-y-3">
+            {filteredPayments.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-muted-foreground">
+                <p className="text-base font-semibold">{isAr ? 'لا توجد مدفوعات مسجلة' : 'No payments found'}</p>
+              </div>
+            ) : (
+              filteredPayments.map((p) => {
+                const isVoided = !!p.voided_at
+                return (
+                  <div
+                    key={p.id}
+                    className={`rounded-xl border border-border p-4 bg-card shadow-sm space-y-2.5 ${
+                      isVoided ? 'opacity-50 line-through' : ''
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="font-mono font-bold text-sm text-primary">#{p.receipt_no}</span>
+                        <p className="font-semibold text-xs text-foreground mt-0.5">
+                          {p.student_name} <span className="font-mono text-muted-foreground">({p.student_code})</span>
+                        </p>
+                      </div>
+                      <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
+                        {p.amount} EGP
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/60">
+                      <Badge variant="secondary" className="text-[10px] capitalize">
+                        {p.method.replace('_', ' ')}
+                      </Badge>
+                      <span className="font-mono">{new Date(p.paid_at).toLocaleDateString()}</span>
+                    </div>
+
+                    {!isVoided ? (
+                      <div className="flex justify-end pt-1 border-t border-border/60">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive h-8"
+                          onClick={() => handleVoidPayment(p.id)}
+                          loading={voidingId === p.id}
+                        >
+                          {isAr ? 'إلغاء الإيصال' : 'Void Receipt'}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex justify-end pt-1">
+                        <Badge variant="outline" className="text-[10px] text-destructive border-destructive/30">
+                          {isAr ? 'ملغى' : 'Voided'}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </>
       )}
     </div>
   )

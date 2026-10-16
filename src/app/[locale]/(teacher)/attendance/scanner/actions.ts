@@ -18,7 +18,7 @@ export async function punchAttendanceAction({
   const code = studentIdentifier?.trim().toUpperCase()
   if (!code) return { error: 'Please enter a student code or scan QR.' }
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // 1. Try finding student by code (e.g. S1001 or 1001) or UUID
   let query = (admin.from('students' as any) as any)

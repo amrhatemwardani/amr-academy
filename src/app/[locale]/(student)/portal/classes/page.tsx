@@ -13,7 +13,7 @@ export default async function StudentClassesPage({
   const { locale } = await params
   const user = await requireStudent(locale)
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // 1. Fetch teacher profile
   const { data: teacher } = await (admin.from('profiles' as any) as any)
