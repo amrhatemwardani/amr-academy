@@ -1,6 +1,12 @@
+import { BrandedLoader } from '@/components/ui/BrandedLoader'
+
 export default function StudentLoading() {
   return (
-    <div className="space-y-4 max-w-2xl mx-auto animate-pulse pb-20">
+    <div className="space-y-4 max-w-2xl mx-auto pb-20">
+      <div className="flex justify-center py-4">
+        <BrandedLoader size="sm" showText={false} />
+      </div>
+      <div className="space-y-4 animate-pulse">
       {/* Header */}
       <div className="space-y-2 pt-2">
         <div className="h-7 w-48 rounded-lg bg-muted" />
@@ -24,6 +30,7 @@ export default function StudentLoading() {
           </div>
         </div>
       ))}
+      </div>
     </div>
   )
 }

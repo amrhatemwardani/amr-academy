@@ -1,6 +1,12 @@
+import { BrandedLoader } from '@/components/ui/BrandedLoader'
+
 export default function TeacherLoading() {
   return (
-    <div className="space-y-6 animate-pulse">
+    <div className="space-y-6">
+      <div className="flex justify-center py-4">
+        <BrandedLoader size="sm" showText={false} />
+      </div>
+      <div className="space-y-6 animate-pulse">
       {/* Header skeleton */}
       <div className="flex items-center justify-between">
         <div className="space-y-2">
@@ -44,5 +50,6 @@ export default function TeacherLoading() {
         </div>
       </div>
     </div>
+  </div>
   )
 }

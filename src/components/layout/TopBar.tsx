@@ -10,6 +10,8 @@ import { LogoutButton } from '@/components/ui/LogoutButton'
 import Link from 'next/link'
 import { useLocale } from 'next-intl'
 
+import Image from 'next/image'
+
 interface TopBarProps {
   userName: string
   avatarUrl?: string | null
@@ -44,18 +46,40 @@ export function TopBar({
     : `/${locale}/portal/profile`
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
-      {/* Search */}
-      <div className="hidden md:flex flex-1 max-w-sm">
-        <div className="relative w-full">
-          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search..."
-            className="ps-9 h-8 text-sm bg-muted/50 border-transparent focus-visible:border-input focus-visible:bg-background"
-            aria-label="Global search"
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
+      {/* Brand logo (visible on mobile, and always in student portal) */}
+      <div className={role === 'student' ? 'flex items-center gap-2.5' : 'flex lg:hidden items-center gap-2.5'}>
+        <Link
+          href={role === 'teacher' ? `/${locale}/dashboard` : `/${locale}/portal`}
+          className="flex items-center gap-2 hover:opacity-90 transition-opacity"
+        >
+          <Image
+            src="/logo-icon.svg"
+            alt="Amr Hatem Academy"
+            width={32}
+            height={32}
+            className="h-8 w-8 object-contain"
           />
-        </div>
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-foreground leading-tight">م. عمرو حاتم</span>
+            <span className="text-[10px] text-accent font-semibold leading-none">Academy</span>
+          </div>
+        </Link>
       </div>
+
+      {/* Search (Teacher desktop) */}
+      {role === 'teacher' && (
+        <div className="hidden lg:flex flex-1 max-w-sm">
+          <div className="relative w-full">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search..."
+              className="ps-9 h-8 text-sm bg-muted/50 border-transparent focus-visible:border-input focus-visible:bg-background"
+              aria-label="Global search"
+            />
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-1 md:flex-none items-center justify-end gap-1">
         {/* Messages */}

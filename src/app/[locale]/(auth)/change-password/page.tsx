@@ -16,6 +16,9 @@ export async function generateMetadata({
   }
 }
 
+import Image from 'next/image'
+import Link from 'next/link'
+
 export default async function ChangePasswordPage({
   params,
 }: {
@@ -32,15 +35,22 @@ export default async function ChangePasswordPage({
   return (
     <main className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-background relative overflow-hidden">
       {/* Background ambient lighting */}
-      <div className="absolute -top-32 -start-32 h-96 w-96 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -end-32 h-96 w-96 rounded-full bg-purple-500/10 blur-3xl pointer-events-none" />
+      <div className="absolute -top-32 -start-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -end-32 h-96 w-96 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10 space-y-6">
-        {/* Top Academy Header */}
+        {/* Top Academy Header with Logo */}
         <div className="flex flex-col items-center text-center space-y-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600/10 border border-indigo-500/20 shadow-sm">
-            <GraduationCap className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
-          </div>
+          <Link href={`/${locale}`} className="inline-block">
+            <Image
+              src="/logo.svg"
+              alt="Eng. Amr Hatem Academy"
+              width={220}
+              height={68}
+              priority
+              className="h-14 w-auto object-contain mx-auto"
+            />
+          </Link>
           <div>
             <h1 className="text-xl font-bold text-foreground">
               {isAr ? 'أكاديمية م. عمرو حاتم' : 'Eng. Amr Hatem Academy'}

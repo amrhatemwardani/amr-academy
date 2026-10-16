@@ -1,0 +1,21 @@
+{
+  "name": "Amr Hatem Academy",
+  "short_name": "Amr Academy",
+  "description": "Physics & Mathematics Academy — Student Management Portal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F2A4A",
+  "theme_color": "#0F2A4A",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education"],
+  "lang": "ar",
+  "dir": "rtl"
+}

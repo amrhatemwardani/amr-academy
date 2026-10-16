@@ -22,10 +22,16 @@ export const metadata: Metadata = {
     template: '%s | Amr Academy',
   },
   description:
-    'Amr Academy Student Management System — attendance, finance, exams, and performance in one platform.',
+    'Amr Academy Student Management System — Physics & Mathematics by Eng. Amr Hatem.',
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   ),
+  icons: {
+    icon: '/logo-icon.svg',
+    shortcut: '/logo-icon.svg',
+    apple: '/logo-icon.svg',
+  },
+  manifest: '/manifest.json',
   robots: {
     index: false, // private application
     follow: false,

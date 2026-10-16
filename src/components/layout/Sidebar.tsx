@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
@@ -82,20 +83,30 @@ export function Sidebar({ className }: SidebarProps) {
       )}
     >
       {/* Logo / Brand */}
-      <div className={cn(
-        'flex items-center gap-3 px-4 py-5 border-b border-sidebar-border',
-        collapsed && 'justify-center px-2'
-      )}>
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/20">
-          <GraduationCap className="h-5 w-5 text-primary" />
+      <Link
+        href={`/${locale}/dashboard`}
+        className={cn(
+          'flex items-center gap-3 px-4 py-4 border-b border-sidebar-border transition-colors hover:bg-sidebar-accent/50',
+          collapsed && 'justify-center px-2'
+        )}
+      >
+        <div className="relative h-10 w-10 shrink-0 rounded-xl overflow-hidden shadow-sm">
+          <Image
+            src="/logo-icon.svg"
+            alt="Amr Hatem Academy"
+            width={40}
+            height={40}
+            className="h-full w-full object-contain"
+            priority
+          />
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-sm font-bold text-sidebar-foreground truncate">م. عمرو حاتم</p>
-            <p className="text-xs text-sidebar-foreground/50 truncate">Eng. Amr Hatem Academy</p>
+            <p className="text-sm font-bold text-sidebar-foreground truncate tracking-tight">م. عمرو حاتم</p>
+            <p className="text-[11px] text-accent font-semibold tracking-wider uppercase truncate">Physics & Math</p>
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 scrollbar-thin">

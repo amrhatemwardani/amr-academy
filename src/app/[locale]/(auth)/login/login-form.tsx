@@ -73,11 +73,11 @@ export function LoginForm({ locale }: LoginFormProps) {
           className={cn(
             'flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs sm:text-sm font-semibold transition-all duration-200',
             tab === 'teacher'
-              ? 'bg-background text-foreground shadow-sm'
+              ? 'bg-background text-foreground shadow-sm ring-1 ring-border'
               : 'text-muted-foreground hover:text-foreground'
           )}
         >
-          <GraduationCap className="h-4 w-4 text-indigo-500" />
+          <GraduationCap className="h-4 w-4 text-primary" />
           <span>{isAr ? 'بوابة المعلم' : 'Teacher Portal'}</span>
         </button>
         <button
@@ -86,11 +86,11 @@ export function LoginForm({ locale }: LoginFormProps) {
           className={cn(
             'flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs sm:text-sm font-semibold transition-all duration-200',
             tab === 'student'
-              ? 'bg-background text-foreground shadow-sm'
+              ? 'bg-background text-foreground shadow-sm ring-1 ring-border'
               : 'text-muted-foreground hover:text-foreground'
           )}
         >
-          <BookOpen className="h-4 w-4 text-blue-500" />
+          <BookOpen className="h-4 w-4 text-secondary" />
           <span>{isAr ? 'بوابة الطالب' : 'Student Portal'}</span>
         </button>
       </div>
@@ -199,7 +199,7 @@ export function LoginForm({ locale }: LoginFormProps) {
         {/* Submit Button */}
         <Button
           type="submit"
-          className="w-full h-11 rounded-xl text-sm font-semibold shadow-md bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white"
+          className="w-full h-11 rounded-xl text-sm font-semibold shadow-md bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200"
           loading={pending}
           disabled={pending}
         >
@@ -209,10 +209,10 @@ export function LoginForm({ locale }: LoginFormProps) {
         </Button>
       </form>
 
-      {/* Teacher Contact & YouTube Channel Card (Replaced Demo Credentials) */}
-      <div className="rounded-xl border border-indigo-500/20 bg-gradient-to-br from-indigo-50/50 via-background to-purple-50/30 dark:from-indigo-950/20 dark:via-background dark:to-purple-950/20 p-4 space-y-3">
+      {/* Teacher Contact & YouTube Channel Card */}
+      <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-3">
         <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-          <HelpCircle className="h-4 w-4 text-indigo-500" />
+          <HelpCircle className="h-4 w-4 text-accent" />
           <span>{isAr ? 'للتواصل والاستفسار مع م. عمرو حاتم:' : 'Need help? Contact Eng. Amr Hatem:'}</span>
         </div>
 
@@ -241,7 +241,7 @@ export function LoginForm({ locale }: LoginFormProps) {
         </div>
 
         <div className="flex items-center justify-center gap-2 text-[11px] text-muted-foreground pt-1">
-          <Phone className="h-3 w-3 text-indigo-500" />
+          <Phone className="h-3 w-3 text-secondary" />
           <span>{isAr ? 'هاتف / واتساب:' : 'Phone / WhatsApp:'}</span>
           <a href="tel:+201012006316" className="font-semibold text-foreground hover:underline" dir="ltr">
             +20 101 200 6316
