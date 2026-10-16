@@ -15,7 +15,7 @@ export default async function TeacherLayout({
   // This will redirect to /login if not authenticated as teacher
   const user = await requireTeacher(locale)
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
   const { count: unreadCount } = await (admin.from('notifications' as any) as any)
     .select('id', { count: 'exact', head: true })
     .eq('user_id', user.id)

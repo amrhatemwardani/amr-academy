@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useTransition, useRef } from 'react'
+import Image from 'next/image'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Settings, User, Lock, Building2, CheckCircle2 } from 'lucide-react'
+import { Settings, User, Lock, Building2, CheckCircle2, Palette, Sparkles, Upload, Eye } from 'lucide-react'
 import { saveSettingsAction, changePasswordAction, updateProfileAction } from './actions'
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -96,6 +97,27 @@ export function SettingsClientView({ locale, settings, profile }: Props) {
   const [profilePending, startProfile] = useTransition()
   const [pwPending, startPw] = useTransition()
   const pwFormRef = useRef<HTMLFormElement>(null)
+
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null)
+  const [brandName, setBrandName] = useState(settings.school_name || 'أكاديمية م. عمرو حاتم')
+  const [tagline, setTagline] = useState('Physics & Mathematics Academy')
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setLogoPreview(URL.createObjectURL(file))
+      toast.info(isAr ? 'تم تجهيز معاينة اللوجو' : 'Logo preview loaded')
+    }
+  }
+
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setBannerPreview(URL.createObjectURL(file))
+      toast.info(isAr ? 'تم تجهيز معاينة البانر' : 'Banner preview loaded')
+    }
+  }
 
   // ── Save Academy Settings ─────────────────────────────────────────
   function handleSettings(formData: FormData) {
@@ -272,7 +294,151 @@ export function SettingsClientView({ locale, settings, profile }: Props) {
         </CardContent>
       </Card>
 
-      {/* ── Change Password ──────────────────────────────────────── */}
+      {/* ── Branding & Visual Identity ────────────────────────────── */}
+      <Card className="border shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Palette className="h-4 w-4 text-primary" />
+            {isAr ? 'الهوية البصرية والمظهر الأكاديمي' : 'Branding & Visual Identity'}
+          </CardTitle>
+          <CardDescription>
+            {isAr
+              ? 'معاينة وإدارة اللوجو والبانر وألوان الأكاديمية مع معاينة حية'
+              : 'Preview and manage academy logo, banner, and academic color palette'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Color Palette Swatches */}
+          <div>
+            <p className="text-xs font-semibold uppercase text-muted-foreground mb-2.5">
+              {isAr ? 'باليت الألوان المعتمدة (WCAG AA)' : 'Academic Color Palette (WCAG AA)'}
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+              <div className="rounded-xl border border-border p-2.5 bg-[#0F2A4A] text-white space-y-1">
+                <span className="text-[10px] uppercase font-bold opacity-80">{isAr ? 'الأساسي' : 'Primary'}</span>
+                <p className="text-xs font-mono font-bold">#0F2A4A</p>
+                <p className="text-[10px] opacity-75">Deep Navy</p>
+              </div>
+              <div className="rounded-xl border border-border p-2.5 bg-[#14A3A3] text-white space-y-1">
+                <span className="text-[10px] uppercase font-bold opacity-80">{isAr ? 'الثانوي' : 'Secondary'}</span>
+                <p className="text-xs font-mono font-bold">#14A3A3</p>
+                <p className="text-[10px] opacity-75">Teal</p>
+              </div>
+              <div className="rounded-xl border border-border p-2.5 bg-[#F2B134] text-[#0F2A4A] space-y-1">
+                <span className="text-[10px] uppercase font-bold opacity-80">{isAr ? 'التمييز' : 'Accent'}</span>
+                <p className="text-xs font-mono font-bold">#F2B134</p>
+                <p className="text-[10px] opacity-75">Warm Gold</p>
+              </div>
+              <div className="rounded-xl border border-border p-2.5 bg-[#F7F9FC] text-[#1E293B] space-y-1">
+                <span className="text-[10px] uppercase font-bold opacity-80">{isAr ? 'الخلفية' : 'Background'}</span>
+                <p className="text-xs font-mono font-bold">#F7F9FC</p>
+                <p className="text-[10px] opacity-75">Off-white</p>
+              </div>
+              <div className="rounded-xl border border-border p-2.5 bg-[#1E293B] text-white space-y-1">
+                <span className="text-[10px] uppercase font-bold opacity-80">{isAr ? 'النصوص' : 'Text'}</span>
+                <p className="text-xs font-mono font-bold">#1E293B</p>
+                <p className="text-[10px] opacity-75">Dark Slate</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Logo & Banner Uploaders */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border">
+            {/* Logo Picker */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Upload className="h-3.5 w-3.5 text-primary" />
+                <span>{isAr ? 'تحديث ملف اللوجو' : 'Upload Logo'}</span>
+              </label>
+              <input
+                type="file"
+                accept="image/*,.svg"
+                onChange={handleLogoChange}
+                className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-border file:text-xs file:font-semibold file:bg-muted hover:file:bg-muted/80 w-full"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                {isAr ? 'يدعم SVG أو PNG أو WebP عالي الدقة' : 'Supports SVG, PNG, or high-res WebP'}
+              </p>
+            </div>
+
+            {/* Banner Picker */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Upload className="h-3.5 w-3.5 text-secondary" />
+                <span>{isAr ? 'تحديث صورة البانر' : 'Upload Banner'}</span>
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleBannerChange}
+                className="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-border file:text-xs file:font-semibold file:bg-muted hover:file:bg-muted/80 w-full"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                {isAr ? 'صورة عريضة للـ Hero واليوتيوب' : 'Wide landscape image for Hero section'}
+              </p>
+            </div>
+          </div>
+
+          {/* Live Component Preview */}
+          <div className="space-y-2 pt-2 border-t border-border">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+              <Eye className="h-3.5 w-3.5 text-primary" />
+              <span>{isAr ? 'معاينة حية للمظهر (Live Preview)' : 'Live UI Component Preview'}</span>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-gradient-to-br from-[#07172B] via-[#0F2A4A] to-[#0D223B] p-5 text-white shadow-md space-y-4">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 relative rounded-xl overflow-hidden bg-white/10 p-1 flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={logoPreview || '/logo-icon.svg'}
+                      alt="Logo Preview"
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white leading-tight">{brandName}</p>
+                    <p className="text-[11px] text-[#F2B134] font-semibold">{tagline}</p>
+                  </div>
+                </div>
+
+                <span className="rounded-full bg-[#F2B134] text-[#0F2A4A] px-2.5 py-0.5 text-[10px] font-bold">
+                  {isAr ? 'معاينة مباشرة' : 'Live Mock'}
+                </span>
+              </div>
+
+              {bannerPreview && (
+                <div className="rounded-xl overflow-hidden border border-white/10 max-h-36">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={bannerPreview} alt="Banner Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+                <span className="text-slate-300">
+                  {isAr ? 'تجربة أزرار وهوية المنصة الأكاديمية' : 'Academic UI buttons & styling sample'}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="rounded-lg bg-[#F2B134] text-[#0F2A4A] px-3 py-1.5 text-xs font-bold shadow hover:opacity-90"
+                  >
+                    {isAr ? 'زر متميز' : 'Accent Action'}
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-lg bg-[#14A3A3] text-white px-3 py-1.5 text-xs font-semibold shadow hover:opacity-90"
+                  >
+                    {isAr ? 'زر تفاعلي' : 'Secondary Action'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">

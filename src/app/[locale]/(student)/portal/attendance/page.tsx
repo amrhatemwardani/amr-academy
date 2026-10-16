@@ -25,7 +25,7 @@ export default async function StudentAttendancePage({
   const user = await requireStudent(locale)
   const isAr = locale === 'ar'
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // Fetch student attendance records with class names
   const { data: rawAttendance } = await (admin.from('attendance' as any) as any)

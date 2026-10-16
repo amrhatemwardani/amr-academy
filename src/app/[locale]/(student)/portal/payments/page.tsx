@@ -24,7 +24,7 @@ export default async function StudentPaymentsPage({
   const user = await requireStudent(locale)
   const isAr = locale === 'ar'
 
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // 1. Fetch balance from student_balances view
   const { data: balanceData } = await (admin.from('student_balances' as any) as any)

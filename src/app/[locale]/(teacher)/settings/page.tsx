@@ -15,7 +15,7 @@ export default async function SettingsPage({
   const user = await requireTeacher(locale)
 
   const supabase = await createClient()
-  const admin = await createAdminClient()
+  const admin = createAdminClient()
 
   // Load settings row
   const { data: settingsRow } = await (supabase.from('settings' as any) as any)
