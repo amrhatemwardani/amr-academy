@@ -487,6 +487,22 @@ export default async function LandingPage({
           </p>
         </div>
       </footer>
+
+      {/* Floating WhatsApp Action Button */}
+      <aside aria-label="WhatsApp Contact" className="fixed bottom-6 end-6 z-40">
+        <a
+          href="https://wa.me/201012006316?text=مرحبا%20م.%20عمرو%20حاتم%20أود%20الاستفسار%20عن%20دروس%20الأكاديمية"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center gap-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white p-3.5 shadow-2xl hover:shadow-emerald-500/40 transition-all duration-300 hover:scale-105"
+          title={isAr ? 'تواصل معنا عبر واتساب' : 'Chat with us on WhatsApp'}
+        >
+          <MessageSquare className="h-6 w-6" />
+          <span className="hidden sm:inline-block text-xs font-bold pe-1">
+            {isAr ? 'تواصل مع م. عمرو' : 'Chat on WhatsApp'}
+          </span>
+        </a>
+      </aside>
     </div>
   )
 }
