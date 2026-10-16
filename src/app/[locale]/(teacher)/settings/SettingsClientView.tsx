@@ -5,8 +5,9 @@ import Image from 'next/image'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Settings, User, Lock, Building2, CheckCircle2, Palette, Sparkles, Upload, Eye } from 'lucide-react'
-import { saveSettingsAction, changePasswordAction, updateProfileAction } from './actions'
+import { useEffect } from 'react'
+import { Settings, User, Lock, Building2, CheckCircle2, Palette, Sparkles, Upload, Eye, Activity, Database, Server, RefreshCw, AlertTriangle } from 'lucide-react'
+import { saveSettingsAction, changePasswordAction, updateProfileAction, getSystemMonitoringMetricsAction } from './actions'
 
 // ── Types ─────────────────────────────────────────────────────────────
 interface AcademySettings {
@@ -102,6 +103,33 @@ export function SettingsClientView({ locale, settings, profile }: Props) {
   const [bannerPreview, setBannerPreview] = useState<string | null>(null)
   const [brandName, setBrandName] = useState(settings.school_name || 'أكاديمية م. عمرو حاتم')
   const [tagline, setTagline] = useState('Physics & Mathematics Academy')
+
+  const [metrics, setMetrics] = useState<{
+    totalRows: number
+    activeStudents: number
+    estimatedMB: number
+    limitMB: number
+    percentage: number
+    breakdown: Array<{ name: string; labelAr: string; labelEn: string; count: number }>
+    status: 'critical' | 'warning' | 'healthy'
+  } | null>(null)
+  const [metricsLoading, setMetricsLoading] = useState(false)
+
+  const loadMetrics = async () => {
+    setMetricsLoading(true)
+    try {
+      const data = await getSystemMonitoringMetricsAction()
+      setMetrics(data)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setMetricsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadMetrics()
+  }, [])
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -436,6 +464,160 @@ export function SettingsClientView({ locale, settings, profile }: Props) {
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* ── System Monitoring & Storage Health ──────────────────────── */}
+      <Card className="border shadow-sm">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Server className="h-4 w-4 text-primary" />
+                {isAr ? 'صحة النظام واستهلاك الذاكرة' : 'System & Storage Health'}
+              </CardTitle>
+              <CardDescription>
+                {isAr
+                  ? 'مراقبة سعة قاعدة البيانات (حد 500 ميجابايت المجاني) وعدد السجلات'
+                  : 'Monitor database usage against the 500 MB free tier limit and record counts'}
+              </CardDescription>
+            </div>
+            <button
+              type="button"
+              onClick={loadMetrics}
+              disabled={metricsLoading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-medium text-foreground transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${metricsLoading ? 'animate-spin' : ''}`} />
+              <span>{isAr ? 'تحديث' : 'Refresh'}</span>
+            </button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {metricsLoading && !metrics ? (
+            <div className="py-8 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+              <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <p className="text-xs">{isAr ? 'جاري قراءة إحصائيات النظام...' : 'Reading system metrics...'}</p>
+            </div>
+          ) : metrics ? (
+            <>
+              {/* Storage Gauge */}
+              <div className="rounded-xl border border-border/80 bg-muted/40 p-4 space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-primary" />
+                    <span className="font-semibold text-foreground">
+                      {isAr ? 'سعة قاعدة البيانات المستهلكة' : 'Database Storage Usage'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-sm">
+                      {metrics.estimatedMB} MB / {metrics.limitMB} MB
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs font-semibold ${
+                        metrics.status === 'critical'
+                          ? 'bg-red-500/10 text-red-600 border-red-500/30'
+                          : metrics.status === 'warning'
+                          ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                          : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+                      }`}
+                    >
+                      {metrics.percentage}%
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-border rounded-full h-3 overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 rounded-full ${
+                      metrics.status === 'critical'
+                        ? 'bg-destructive'
+                        : metrics.status === 'warning'
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500'
+                    }`}
+                    style={{ width: `${Math.max(2, metrics.percentage)}%` }}
+                  />
+                </div>
+
+                {/* Warning message if > 70% */}
+                {metrics.status === 'warning' && (
+                  <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 p-2 rounded-lg">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span>
+                      {isAr
+                        ? 'تنبيه: اقترب استهلاك قاعدة البيانات من 70% من السعة المجانية.'
+                        : 'Warning: Storage reached 70% threshold of the 500MB free tier limit.'}
+                    </span>
+                  </div>
+                )}
+                {metrics.status === 'critical' && (
+                  <div className="flex items-center gap-2 text-xs text-red-700 dark:text-red-400 bg-red-500/10 p-2 rounded-lg">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span>
+                      {isAr
+                        ? 'تحذير حرج: تجاوز الاستهلاك 90%. يرجى أرشفة السجلات القديمة لتفادي التوقف.'
+                        : 'Critical: Storage exceeded 90%. Consider cleaning up old logs and media.'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Summary Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="p-3 rounded-xl border border-border bg-card">
+                  <p className="text-xs text-muted-foreground">{isAr ? 'إجمالي السجلات' : 'Total Records'}</p>
+                  <p className="text-lg font-bold font-mono text-foreground mt-1">{metrics.totalRows.toLocaleString()}</p>
+                </div>
+                <div className="p-3 rounded-xl border border-border bg-card">
+                  <p className="text-xs text-muted-foreground">{isAr ? 'الطلاب النشطون' : 'Active Students'}</p>
+                  <p className="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
+                    {metrics.activeStudents.toLocaleString()}
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl border border-border bg-card col-span-2 sm:col-span-1">
+                  <p className="text-xs text-muted-foreground">{isAr ? 'حالة النظام' : 'System Health'}</p>
+                  <p className="text-sm font-bold text-foreground mt-1 flex items-center gap-1.5">
+                    <span
+                      className={`h-2.5 w-2.5 rounded-full ${
+                        metrics.status === 'critical'
+                          ? 'bg-red-500'
+                          : metrics.status === 'warning'
+                          ? 'bg-amber-500'
+                          : 'bg-emerald-500'
+                      }`}
+                    />
+                    {metrics.status === 'critical'
+                      ? (isAr ? 'حرجة' : 'Critical')
+                      : metrics.status === 'warning'
+                      ? (isAr ? 'تحذير' : 'Warning')
+                      : (isAr ? 'ممتازة ومستقرة' : 'Optimal')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Records Breakdown Grid */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  {isAr ? 'تفصيل السجلات حسب الجداول' : 'Database Tables Breakdown'}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {metrics.breakdown.map((item) => (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between p-2.5 rounded-lg border border-border/70 bg-card/60 text-xs"
+                    >
+                      <span className="font-medium text-foreground">{isAr ? item.labelAr : item.labelEn}</span>
+                      <span className="font-mono font-bold text-muted-foreground">{item.count.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : null}
         </CardContent>
       </Card>
 

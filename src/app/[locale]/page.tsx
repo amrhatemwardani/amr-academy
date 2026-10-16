@@ -18,7 +18,15 @@ import {
   ArrowRight,
   ArrowLeft,
   GraduationCap,
+  Calendar,
+  Globe,
+  HelpCircle,
+  Check,
+  MapPin,
+  Clock,
+  Award,
 } from 'lucide-react'
+import { YouTubeGallery } from '@/components/public/YouTubeGallery'
 
 export default async function LandingPage({
   params,
@@ -112,22 +120,33 @@ export default async function LandingPage({
             />
           </Link>
 
-          <nav className="flex items-center gap-2 sm:gap-3">
+          <nav className="flex items-center gap-1.5 sm:gap-2.5">
+            <Link
+              href={`/${locale}/hall-of-fame`}
+              className="hidden sm:inline-flex text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+            >
+              {isAr ? 'لوحة الشرف' : 'Hall of Fame'}
+            </Link>
+            <Link
+              href={`/${locale}/apply`}
+              className="rounded-xl bg-[#F2B134] text-[#0F2A4A] px-3.5 py-1.5 text-xs sm:text-sm font-bold shadow hover:bg-[#F2B134]/90 transition-all hover:scale-105"
+            >
+              {isAr ? 'التحق بنا' : 'Apply Now'}
+            </Link>
             <Link
               href={`/${locale}/login`}
-              className="rounded-xl border border-border px-4 py-2 text-xs sm:text-sm font-semibold text-foreground transition-all hover:bg-muted"
+              className="rounded-xl border border-border px-3 py-1.5 text-xs sm:text-sm font-semibold text-foreground transition-all hover:bg-muted"
             >
-              {isAr ? 'تسجيل الدخول' : 'Sign In'}
+              {isAr ? 'دخول المنصة' : 'Sign In'}
             </Link>
-            <a
-              href="https://wa.me/201012006316?text=مرحبا%20أستاذ%20عمرو%20أريد%20الاشتراك%20في%20الأكاديمية"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:scale-[1.02]"
+            <Link
+              href={isAr ? '/en' : '/ar'}
+              className="inline-flex items-center gap-1 rounded-xl border border-border px-2 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all"
+              title={isAr ? 'Switch to English' : 'التحويل للعربية'}
             >
-              <Phone className="h-3.5 w-3.5" />
-              <span>{isAr ? 'تواصل معنا' : 'WhatsApp'}</span>
-            </a>
+              <Globe className="h-3.5 w-3.5" />
+              <span>{isAr ? 'EN' : 'عربي'}</span>
+            </Link>
           </nav>
         </div>
       </header>
@@ -187,22 +206,29 @@ export default async function LandingPage({
 
           {/* CTA Buttons */}
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <Link
+              href={`/${locale}/apply`}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-xl bg-[#F2B134] px-7 py-3.5 text-sm sm:text-base font-bold text-[#0F2A4A] shadow-lg shadow-[#F2B134]/20 transition-all hover:bg-[#F2B134]/90 hover:scale-[1.02]"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span>{isAr ? 'التحق بالأكاديمية الآن' : 'Apply For Admission'}</span>
+            </Link>
+            <Link
+              href={`/${locale}/login`}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3.5 text-sm sm:text-base font-semibold text-white backdrop-blur transition-all hover:bg-white/20 hover:border-white/40"
+            >
+              <Users className="h-4 w-4" />
+              <span>{isAr ? 'دخول بوابة المنصة' : 'Portal Sign In'}</span>
+            </Link>
             <a
               href="https://wa.me/201012006316?text=مرحبا%20أستاذ%20عمرو%20أريد%20الاشتراك%20في%20الأكاديمية"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-xl bg-[#F2B134] px-8 py-3.5 text-sm sm:text-base font-bold text-[#0F2A4A] shadow-lg shadow-[#F2B134]/20 transition-all hover:bg-[#F2B134]/90 hover:scale-[1.02]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/20 px-6 py-3.5 text-sm sm:text-base font-semibold text-emerald-300 backdrop-blur transition-all hover:bg-emerald-500/30"
             >
               <Phone className="h-4 w-4" />
-              <span>{isAr ? 'اشترك عبر واتساب الآن' : 'Enroll via WhatsApp'}</span>
+              <span>{isAr ? 'واتساب مباشر' : 'WhatsApp'}</span>
             </a>
-            <Link
-              href={`/${locale}/login`}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-8 py-3.5 text-sm sm:text-base font-semibold text-white backdrop-blur transition-all hover:bg-white/20 hover:border-white/40"
-            >
-              <Users className="h-4 w-4" />
-              <span>{isAr ? 'دخول بوابة الطلاب والمعلمين' : 'Sign In to Portal'}</span>
-            </Link>
           </div>
         </div>
       </section>
@@ -361,6 +387,198 @@ export default async function LandingPage({
               </div>
             </div>
           </div>
+
+          {/* ── YouTube Video Player & Filter Gallery ── */}
+          <div className="mt-16 pt-12 border-t border-white/10 space-y-6">
+            <div className="text-center max-w-2xl mx-auto space-y-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600/20 px-3.5 py-1 text-xs font-bold text-red-300 border border-red-500/30">
+                <Youtube className="h-3.5 w-3.5" />
+                <span>{isAr ? 'فيديوهات الشروحات وحل المسائل' : 'Lecture Videos & Problem Solving'}</span>
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-white">
+                {isAr ? 'مكتبة شروحات م. عمرو حاتم على يوتيوب' : 'Physics & Math Lecture Library'}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300">
+                {isAr ? 'شاهد باقة مختارة من أقوى الشروحات وحلول مسائل الامتحانات مجاناً' : 'Select lectures and tricky exam problem explanations on YouTube'}
+              </p>
+            </div>
+
+            <YouTubeGallery locale={locale} />
+          </div>
+        </div>
+      </section>
+
+      {/* ── HALL OF FAME PREVIEW ────────────────────────────────────────────── */}
+      <section className="py-20 bg-muted/30 border-y border-border">
+        <div className="container mx-auto max-w-5xl px-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#F2B134]/15 px-3 py-1 text-xs font-bold text-[#F2B134] mb-2 border border-[#F2B134]/30">
+                <Trophy className="h-3.5 w-3.5" />
+                <span>{isAr ? 'لوحة الشرف' : 'Hall of Fame'}</span>
+              </div>
+              <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
+                {isAr ? 'أوائل ومتفوقي الأكاديمية' : 'Academy Top Achievers'}
+              </h2>
+              <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+                {isAr ? 'نماذج مشرفة من طلابنا الحاصلين على أعلى الدرجات والدرجة النهائية' : 'Celebrating our highest scoring students in Physics and Mathematics'}
+              </p>
+            </div>
+            <Link
+              href={`/${locale}/hall-of-fame`}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-xs sm:text-sm font-semibold shadow hover:bg-primary/90 transition-colors"
+            >
+              <span>{isAr ? 'عرض لوحة الشرف كاملة' : 'View Full Hall of Fame'}</span>
+              <Arrow className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[
+              {
+                rank: 1,
+                nameAr: 'زياد عمرو الشافعي',
+                nameEn: 'Ziad Amr El-Shafei',
+                score: '60 / 60 (100%)',
+                badgeAr: 'الدرجة النهائية فيزياء ثانوية عامة',
+                badgeEn: '100% Full Mark in Physics',
+                gradeAr: '٣ ثانوي',
+                gradeEn: 'Sec 3',
+              },
+              {
+                rank: 2,
+                nameAr: 'مريم محمود عبد الله',
+                nameEn: 'Mariam Mahmoud',
+                score: '118 / 120 (98.3%)',
+                badgeAr: 'تفوق استثنائي رياضيات بحتة وتطبيقية',
+                badgeEn: 'Exceptional in Pure & Applied Math',
+                gradeAr: '٣ ثانوي',
+                gradeEn: 'Sec 3',
+              },
+              {
+                rank: 3,
+                nameAr: 'عمر خالد الديب',
+                nameEn: 'Omar Khaled',
+                score: '99.2%',
+                badgeAr: 'المركز الأول في الفيزياء والرياضيات',
+                badgeEn: 'Top of Group in Physics & Math',
+                gradeAr: '٣ ثانوي',
+                gradeEn: 'Sec 3',
+              },
+            ].map((s) => (
+              <div
+                key={s.nameEn}
+                className="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-3 relative overflow-hidden"
+              >
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`h-8 w-8 rounded-xl flex items-center justify-center font-black text-xs ${
+                      s.rank === 1
+                        ? 'bg-[#F2B134] text-[#0F2A4A]'
+                        : s.rank === 2
+                        ? 'bg-slate-300 text-slate-800'
+                        : 'bg-amber-700 text-white'
+                    }`}
+                  >
+                    #{s.rank}
+                  </span>
+                  <span className="text-xs font-semibold text-primary">{isAr ? s.gradeAr : s.gradeEn}</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground text-base">{isAr ? s.nameAr : s.nameEn}</h3>
+                  <p className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-1">{s.score}</p>
+                </div>
+                <p className="text-xs text-muted-foreground border-t border-border pt-2 leading-relaxed">
+                  🏆 {isAr ? s.badgeAr : s.badgeEn}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── GROUPS & SCHEDULE ──────────────────────────────────────────────── */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto max-w-5xl px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
+              {isAr ? 'المجموعات والمواعيد الدراسية' : 'Academic Groups & Schedules'}
+            </h2>
+            <p className="mt-2 text-xs sm:text-sm text-muted-foreground max-w-lg mx-auto">
+              {isAr ? 'مواعيد منتظمة ومجموعات محدودة العدد لضمان أقصى درجات الفهم والمتابعة الشخصية' : 'Regular weekly sessions with limited class sizes for maximum engagement'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-4">
+              <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                {isAr ? 'الصف الأول الثانوي' : '1st Secondary (Sec 1)'}
+              </div>
+              <h3 className="font-bold text-lg text-foreground">
+                {isAr ? 'أساسيات الفيزياء والرياضيات' : 'Physics & Math Fundamentals'}
+              </h3>
+              <ul className="space-y-2 text-xs text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5 text-primary" />
+                  <span>{isAr ? 'السبت والثلاثاء ٤:٠٠ م (فيزياء)' : 'Sat & Tue 4:00 PM (Physics)'}</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5 text-secondary" />
+                  <span>{isAr ? 'الأحد والأربعاء ٤:٠٠ م (رياضيات)' : 'Sun & Wed 4:00 PM (Math)'}</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span>{isAr ? 'السنتر + بث أونلاين مباشر' : 'Center + Live Stream'}</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-secondary/40 bg-card p-6 shadow-sm space-y-4">
+              <div className="inline-block rounded-lg bg-secondary/10 px-3 py-1 text-xs font-bold text-secondary">
+                {isAr ? 'الصف الثاني الثانوي' : '2nd Secondary (Sec 2)'}
+              </div>
+              <h3 className="font-bold text-lg text-foreground">
+                {isAr ? 'الفيزياء والميكانيكا والتفاضل' : 'Physics, Mechanics & Calculus'}
+              </h3>
+              <ul className="space-y-2 text-xs text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5 text-primary" />
+                  <span>{isAr ? 'السبت والثلاثاء ٦:٠٠ م (فيزياء)' : 'Sat & Tue 6:00 PM (Physics)'}</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5 text-secondary" />
+                  <span>{isAr ? 'الأحد والأربعاء ٦:٠٠ م (رياضيات)' : 'Sun & Wed 6:00 PM (Math)'}</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span>{isAr ? 'السنتر + تسجيلات منصة كاملة' : 'Center + Full Recordings'}</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-[#F2B134]/50 bg-gradient-to-b from-[#F2B134]/5 to-card p-6 shadow-sm space-y-4">
+              <div className="inline-block rounded-lg bg-[#F2B134]/20 px-3 py-1 text-xs font-bold text-[#0F2A4A] dark:text-[#F2B134]">
+                {isAr ? 'الصف الثالث الثانوي' : '3rd Secondary (Thanaweya)'}
+              </div>
+              <h3 className="font-bold text-lg text-foreground">
+                {isAr ? 'ثانوية عامة — البرنامج المكثف' : 'Thanaweya Amma Intensive'}
+              </h3>
+              <ul className="space-y-2 text-xs text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5 text-primary" />
+                  <span>{isAr ? 'الأحد والأربعاء ٧:٣٠ م (فيزياء)' : 'Sun & Wed 7:30 PM (Physics)'}</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5 text-secondary" />
+                  <span>{isAr ? 'الاثنين والخميس ٦:٠٠ م (تفاضل وجبر)' : 'Mon & Thu 6:00 PM (Math)'}</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span>{isAr ? 'امتحان أسبوعي بالباركود + مذكرات' : 'Weekly QR exam + Booklets'}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -405,6 +623,59 @@ export default async function LandingPage({
                 </p>
                 <p className="text-xs sm:text-sm font-bold text-foreground">
                   — {isAr ? t.nameAr : t.nameEn}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ SECTION ──────────────────────────────────────────────────────── */}
+      <section className="py-20 bg-muted/20 border-t border-border">
+        <div className="container mx-auto max-w-3xl px-4">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
+              {isAr ? 'الأسئلة الشائعة' : 'Frequently Asked Questions'}
+            </h2>
+            <p className="mt-2 text-xs sm:text-sm text-muted-foreground">
+              {isAr ? 'كل ما تود معرفته عن نظام الدراسة والمتابعة والامتحانات' : 'Everything you need to know about enrollment and our system'}
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              {
+                qAr: 'كيف يتم تصحيح الواجبات ومتابعة مستوى الطالب؟',
+                qEn: 'How are homework assignments and student progress monitored?',
+                aAr: 'يتم تسليم الواجبات ورقياً بالسنتر أو إلكترونياً عبر المنصة وتصحيحها بدقة، وتصدر تقارير درجات دورية لأولياء الأمور عبر واتساب.',
+                aEn: 'Assignments are submitted physically or through the student portal, graded rigorously, and weekly progress reports are sent to parents.',
+              },
+              {
+                qAr: 'هل يتوفر اشتراك أونلاين للطلاب من خارج القاهرة والمحافظات؟',
+                qEn: 'Is online enrollment available for students outside Cairo?',
+                aAr: 'نعم، المنصة مجهزة بالكامل بالحصص المسجلة، البث المباشر، بنك الأسئلة، والامتحانات المؤقتة مع متابعة شخصية مستمرة.',
+                aEn: 'Yes! The portal provides recorded lectures, live sessions, interactive question banks, and timed online exams with dedicated support.',
+              },
+              {
+                qAr: 'ما هي مميزات كارنيه الطالب الذكي المزود بالباركود؟',
+                qEn: 'What are the benefits of the Smart Student ID Card?',
+                aAr: 'يتيح تسجيل الحضور في ثوانٍ معدودة، ويمنع أي غياب مفاجئ دون علم ولي الأمر، مع ربط مباشر برصيد الحصص والدرجات.',
+                aEn: 'Instant attendance scan at the door, automated absence alerts to parents, and quick identification for exams and booklets.',
+              },
+              {
+                qAr: 'كيف يمكنني التقدم وحجز مقعد في المجموعات؟',
+                qEn: 'How can I apply and reserve a seat in the groups?',
+                aAr: 'يمكنك ملء استمارة التقديم من زر "التحق بنا" بالأعلى، أو التواصل الفوري عبر واتساب على الرقم 01012006316 وسيقوم فريق العمل بتأكيد حجزك.',
+                aEn: 'Click "Apply Now" to submit your application or message us directly on WhatsApp at +20 101 200 6316 to reserve your seat.',
+              },
+            ].map((faq, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-2">
+                <h3 className="font-bold text-foreground text-sm sm:text-base flex items-center gap-2">
+                  <HelpCircle className="h-4 w-4 text-primary shrink-0" />
+                  <span>{isAr ? faq.qAr : faq.qEn}</span>
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed ps-6">
+                  {isAr ? faq.aAr : faq.aEn}
                 </p>
               </div>
             ))}

@@ -16,9 +16,12 @@ export async function generateMetadata({
   const { locale } = await params
   return {
     title: {
-      default: locale === 'ar' ? 'أكاديمية عمرو – نظام إدارة الطلاب' : 'Amr Academy – Student Management System',
-      template: locale === 'ar' ? '%s | أكاديمية عمرو' : '%s | Amr Academy',
+      default: locale === 'ar' ? 'أكاديمية م. عمرو حاتم – فيزياء ورياضيات' : 'Eng. Amr Hatem Academy – Physics & Mathematics',
+      template: locale === 'ar' ? '%s | م. عمرو حاتم' : '%s | Eng. Amr Hatem',
     },
+    description: locale === 'ar'
+      ? 'المنظومة التعليمية الرقمية المتكاملة للفيزياء والرياضيات — متابعة، بنك أسئلة، امتحانات إلكترونية مع م. عمرو حاتم'
+      : 'Comprehensive Physics & Mathematics Academy Platform with Eng. Amr Hatem — exams, attendance, and resources.',
   }
 }
 

@@ -96,3 +96,51 @@ export async function updateProfileAction(formData: FormData) {
   revalidatePath('/ar/settings')
   return { success: true }
 }
+
+// ─── System Monitoring Metrics ──────────────────────────────────────
+export async function getSystemMonitoringMetricsAction() {
+  const admin = createAdminClient()
+
+  const tables = [
+    { name: 'students', labelAr: 'الطلاب المسجلين', labelEn: 'Students' },
+    { name: 'attendance', labelAr: 'سجلات الحضور', labelEn: 'Attendance' },
+    { name: 'charges', labelAr: 'المطالبات المالية', labelEn: 'Invoices' },
+    { name: 'payments', labelAr: 'إيصالات السداد', labelEn: 'Payments' },
+    { name: 'questions', labelAr: 'بنك الأسئلة', labelEn: 'Questions' },
+    { name: 'exams', labelAr: 'الامتحانات', labelEn: 'Exams' },
+    { name: 'exam_attempts', labelAr: 'محاولات الامتحانات', labelEn: 'Exam Attempts' },
+    { name: 'assignments', labelAr: 'الواجبات والتكليفات', labelEn: 'Assignments' },
+    { name: 'assignment_submissions', labelAr: 'تسليمات الواجبات', labelEn: 'Submissions' },
+    { name: 'notifications', labelAr: 'الإشعارات والمراسلات', labelEn: 'Notifications' },
+  ]
+
+  const breakdown: Array<{ name: string; labelAr: string; labelEn: string; count: number }> = []
+
+  let totalRows = 0
+  for (const t of tables) {
+    const { count } = await (admin.from(t.name as any) as any).select('id', { count: 'exact', head: true })
+    const rowCount = count || 0
+    totalRows += rowCount
+    breakdown.push({ ...t, count: rowCount })
+  }
+
+  // Active students
+  const { count: activeCount } = await (admin.from('students' as any) as any)
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'active')
+
+  const estimatedMB = Math.max(0.5, Number(((totalRows * 2.5) / 1024).toFixed(2)))
+  const limitMB = 500
+  const percentage = Math.min(100, Math.max(1, Math.round((estimatedMB / limitMB) * 100)))
+
+  return {
+    totalRows,
+    activeStudents: activeCount || 0,
+    estimatedMB,
+    limitMB,
+    percentage,
+    breakdown,
+    status: (percentage >= 90 ? 'critical' : percentage >= 70 ? 'warning' : 'healthy') as 'critical' | 'warning' | 'healthy',
+  }
+}
+
