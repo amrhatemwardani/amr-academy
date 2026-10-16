@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, Cairo } from 'next/font/google'
 import { ThemeProvider } from 'next-themes'
+import { NavigationProgressBar } from '@/components/layout/NavigationProgressBar'
 import './globals.css'
 
 const inter = Inter({
@@ -45,6 +46,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          {/* Global top progress bar on every page navigation */}
+          <NavigationProgressBar />
           {children}
         </ThemeProvider>
       </body>
