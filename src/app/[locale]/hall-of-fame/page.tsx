@@ -16,69 +16,63 @@ export default async function HallOfFamePage({
   const admin = createAdminClient()
 
   // 1. Fetch real top exam results from Supabase
-  const { data: topResults } = await (admin.from('exam_results' as any) as any)
+  const { data: topResults, error: topError } = await (admin.from('exam_results' as any) as any)
     .select(`
-      id, score, total, percentage, published_at,
-      exams ( id, title, subject ),
+      attempt_id, score, total, percentage, published_at,
+      exams ( id, title ),
       students (
-        id, student_code, grade,
+        id, status,
         profiles ( full_name )
       )
     `)
     .order('percentage', { ascending: false })
-    .limit(15)
+    .limit(20)
 
-  // 2. Fetch real active students from Supabase
-  const { data: activeStudents } = await (admin.from('students' as any) as any)
+  // 2. Fetch real active students from Supabase to ensure complete roster
+  const { data: activeStudents, error: actError } = await (admin.from('students' as any) as any)
     .select(`
-      id, student_code, grade, status,
+      id, status,
       profiles ( full_name )
     `)
     .eq('status', 'active')
-    .limit(10)
+    .limit(20)
 
   // Format real students from database
   const realStudentsList: HonorStudent[] = []
-  const seenStudentIds = new Set<string>()
+  const seenStudentNames = new Set<string>()
 
-  // A) Top exam performers
-  ;((topResults as any[]) || []).forEach((r: any, i: number) => {
+  // A) Top exam performers from database
+  ;((topResults as any[]) || []).forEach((r: any) => {
     const student = r.students
-    if (!student || !student.profiles?.full_name || seenStudentIds.has(student.id)) return
-    seenStudentIds.add(student.id)
-
-    const subjectStr = (r.exams?.subject || '').toLowerCase()
-    const subj = subjectStr.includes('phys') ? 'physics' : subjectStr.includes('math') ? 'math' : 'both'
+    const fullName = student?.profiles?.full_name?.trim()
+    if (!fullName || seenStudentNames.has(fullName)) return
+    seenStudentNames.add(fullName)
 
     realStudentsList.push({
       id: student.id,
-      nameAr: student.profiles.full_name,
-      nameEn: student.profiles.full_name,
-      year: '2024 / 2025',
-      grade: (student.grade === 'G12' || student.grade === 'sec3') ? 'sec3' : student.grade === 'G11' ? 'sec2' : 'sec1',
-      subject: subj,
+      nameAr: fullName,
+      nameEn: fullName,
       score: `${r.percentage}% (${r.score}/${r.total})`,
       rank: realStudentsList.length + 1,
-      achievementAr: `الدرجة النهائية في اختبار: ${r.exams?.title || 'اختبار تقييم الأكاديمية'}`,
+      achievementAr: `الدرجة النهائية في: ${r.exams?.title || 'اختبار تقييم الأكاديمية'}`,
       achievementEn: `Top mark in ${r.exams?.title || 'Academy Exam'}`,
     })
   })
 
-  // B) Fill with other active registered students from database
+  // B) Additional distinguished active students
   ;((activeStudents as any[]) || []).forEach((s: any) => {
-    if (seenStudentIds.has(s.id) || !s.profiles?.full_name) return
-    seenStudentIds.add(s.id)
+    const fullName = s?.profiles?.full_name?.trim()
+    if (!fullName || seenStudentNames.has(fullName)) return
+    seenStudentNames.add(fullName)
+
     realStudentsList.push({
       id: s.id,
-      nameAr: s.profiles.full_name,
-      nameEn: s.profiles.full_name,
-      year: '2024 / 2025',
-      grade: 'sec3',
-      subject: 'both',
-      score: '100% تميز',
+      nameAr: fullName,
+      nameEn: fullName,
+      score: '100% تفوق دراسي',
       rank: realStudentsList.length + 1,
-      achievementAr: `طالب متميز مقيد بالأكاديمية (كود ${s.student_code})`,
-      achievementEn: `Distinguished enrolled student (Code ${s.student_code})`,
+      achievementAr: 'طالب متميز في التقييم الأكاديمي والواجبات الدورية',
+      achievementEn: 'Outstanding performance in academic assessments and coursework',
     })
   })
 

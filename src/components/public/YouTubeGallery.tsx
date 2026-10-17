@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
-import { Play, Youtube, ExternalLink, Sparkles, Filter } from 'lucide-react'
+import { Play, Youtube, ExternalLink } from 'lucide-react'
 
 interface VideoItem {
   id: string
@@ -12,19 +11,17 @@ interface VideoItem {
   grade: string
   duration: string
   youtubeId: string
-  featured?: boolean
 }
 
 const SAMPLE_VIDEOS: VideoItem[] = [
   {
     id: '1',
     titleEn: 'Physics & Math Lecture with Eng. Amr Hatem',
-    titleAr: 'محاضرة متميزة في الفيزياء وحل المسائل الصعبة — م. عمرو حاتم',
+    titleAr: 'محاضرة متميزة في الفيزياء وحل المسائل — م. عمرو حاتم',
     category: 'explanation',
     grade: 'الصف الثالث الثانوي',
     duration: 'شرح تفصيلي',
     youtubeId: 'hhTkgPlYPfE',
-    featured: true,
   },
   {
     id: '2',
@@ -34,7 +31,6 @@ const SAMPLE_VIDEOS: VideoItem[] = [
     grade: 'الثانوية العامة',
     duration: 'أفكار امتحانات',
     youtubeId: '-6xFwKza5dk',
-    featured: true,
   },
   {
     id: '3',
@@ -67,65 +63,23 @@ const SAMPLE_VIDEOS: VideoItem[] = [
 
 export function YouTubeGallery({ locale }: { locale: string }) {
   const isAr = locale === 'ar'
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null)
 
-  const categories = [
-    { key: 'all', labelEn: 'All Videos', labelAr: 'جميع الفيديوهات' },
-    { key: 'explanation', labelEn: 'Explanations', labelAr: 'شروحات الدروس' },
-    { key: 'problems', labelEn: 'Problem Solving', labelAr: 'حل المسائل والتدريبات' },
-    { key: 'revision', labelEn: 'Final Revisions', labelAr: 'المراجعات النهائية' },
-  ]
-
-  const filteredVideos = selectedCategory === 'all'
-    ? SAMPLE_VIDEOS
-    : SAMPLE_VIDEOS.filter((v) => v.category === selectedCategory)
-
   return (
-    <div className="space-y-8" dir={isAr ? 'rtl' : 'ltr'}>
-      {/* Category Pills & Channel Subscribe CTA */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        {/* Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {categories.map((c) => (
-            <button
-              key={c.key}
-              onClick={() => setSelectedCategory(c.key)}
-              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                selectedCategory === c.key
-                  ? 'bg-[#F2B134] text-[#0F2A4A] shadow-md shadow-[#F2B134]/20 scale-105'
-                  : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
-              }`}
-            >
-              {isAr ? c.labelAr : c.labelEn}
-            </button>
-          ))}
-        </div>
-
-        {/* Subscribe Button */}
-        <a
-          href="https://www.youtube.com/@Eng.AmrHatem?sub_confirmation=1"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 text-xs sm:text-sm font-bold shadow-lg shadow-red-600/30 transition-all hover:scale-105"
-        >
-          <Youtube className="h-4 w-4" />
-          <span>{isAr ? 'اشترك في القناة مجاناً' : 'Subscribe to Channel'}</span>
-        </a>
-      </div>
-
-      {/* Videos Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredVideos.map((video) => {
+    <div className="space-y-6" dir={isAr ? 'rtl' : 'ltr'}>
+      {/* Grid of 5 YouTube Videos with Real Thumbnails */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {SAMPLE_VIDEOS.map((video) => {
           const isPlaying = activeVideoId === video.id
+          const thumbnailUrl = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`
 
           return (
             <div
               key={video.id}
-              className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur overflow-hidden shadow-lg transition-all hover:border-[#F2B134]/40 hover:-translate-y-1 flex flex-col"
+              className="rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:border-foreground/20 transition-all flex flex-col"
             >
-              {/* Video Thumbnail / Lazy Player */}
-              <div className="relative aspect-video w-full bg-slate-900 overflow-hidden">
+              {/* Video Thumbnail / In-Place Player */}
+              <div className="relative aspect-video w-full bg-black overflow-hidden">
                 {isPlaying ? (
                   <iframe
                     src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
@@ -138,57 +92,57 @@ export function YouTubeGallery({ locale }: { locale: string }) {
                   <button
                     type="button"
                     onClick={() => setActiveVideoId(video.id)}
-                    className="group relative w-full h-full flex items-center justify-center cursor-pointer text-start"
+                    className="group relative w-full h-full flex items-center justify-center cursor-pointer text-start overflow-hidden"
                     aria-label={`Play ${isAr ? video.titleAr : video.titleEn}`}
                   >
-                    {/* Simulated High-Res Video Thumbnail */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10" />
-                    <div className="absolute inset-0 bg-[#0F2A4A] flex items-center justify-center">
-                      <div className="p-4 text-center opacity-70">
-                        <Youtube className="h-12 w-12 text-red-500 mx-auto mb-2 opacity-80 group-hover:scale-110 transition-transform" />
-                        <p className="text-[11px] font-mono text-slate-300">@Eng.AmrHatem</p>
-                      </div>
-                    </div>
+                    {/* REAL YouTube High-Quality Thumbnail Image */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={thumbnailUrl}
+                      alt={isAr ? video.titleAr : video.titleEn}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
 
-                    {/* Play Button Overlay */}
-                    <div className="relative z-20 h-14 w-14 rounded-full bg-red-600 group-hover:bg-red-500 text-white flex items-center justify-center shadow-xl shadow-red-600/40 transition-transform group-hover:scale-110">
-                      <Play className="h-6 w-6 fill-white ms-0.5" />
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-black/25 group-hover:bg-black/10 transition-colors" />
+
+                    {/* YouTube Red Play Button Badge */}
+                    <div className="relative z-10 h-12 w-12 rounded-full bg-red-600/90 group-hover:bg-red-600 text-white flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
+                      <Play className="h-5 w-5 fill-white ms-0.5" />
                     </div>
 
                     {/* Duration badge */}
-                    <span className="absolute bottom-2 end-2 z-20 rounded bg-black/80 px-2 py-0.5 text-[11px] font-mono font-semibold text-white">
+                    <span className="absolute bottom-2 end-2 z-10 rounded bg-black/85 px-1.5 py-0.5 text-[10px] font-mono text-white">
                       {video.duration}
                     </span>
 
                     {/* Grade badge */}
-                    <span className="absolute top-2 start-2 z-20 rounded-md bg-[#0F2A4A]/90 border border-white/20 px-2 py-0.5 text-[10px] font-bold text-[#F2B134]">
+                    <span className="absolute top-2 start-2 z-10 rounded bg-background/90 border border-border px-1.5 py-0.5 text-[10px] font-medium text-foreground">
                       {video.grade}
                     </span>
                   </button>
                 )}
               </div>
 
-              {/* Video Title & Actions */}
-              <div className="p-4 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-white line-clamp-2 leading-snug">
-                    {isAr ? video.titleAr : video.titleEn}
-                  </h3>
-                </div>
+              {/* Title & Channel Link */}
+              <div className="p-3.5 flex-1 flex flex-col justify-between">
+                <h3 className="text-xs sm:text-sm font-semibold text-foreground line-clamp-2 leading-snug mb-2">
+                  {isAr ? video.titleAr : video.titleEn}
+                </h3>
 
-                <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs">
-                  <span className="text-slate-300 text-[11px]">
-                    {video.category === 'explanation' && (isAr ? 'شرح نظري وتطبيقي' : 'Lesson Theory')}
-                    {video.category === 'problems' && (isAr ? 'حل أفكار ومسائل' : 'Solved Exercises')}
-                    {video.category === 'revision' && (isAr ? 'مراجعة امتحانات' : 'Exam Preparation')}
+                <div className="pt-2 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span className="flex items-center gap-1 text-red-600 dark:text-red-400 font-medium">
+                    <Youtube className="h-3.5 w-3.5 shrink-0" />
+                    <span>م. عمرو حاتم</span>
                   </span>
                   <a
-                    href="https://www.youtube.com/@Eng.AmrHatem"
+                    href={`https://youtu.be/${video.youtubeId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[#F2B134] hover:underline font-semibold text-[11px]"
+                    className="inline-flex items-center gap-1 hover:text-foreground hover:underline"
                   >
-                    <span>{isAr ? 'مشاهدة على يوتيوب' : 'Open in YouTube'}</span>
+                    <span>{isAr ? 'مشاهدة على YouTube' : 'Open'}</span>
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 </div>

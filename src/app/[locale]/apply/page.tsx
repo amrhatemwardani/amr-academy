@@ -119,16 +119,16 @@ export default function ApplyPage({
         <div className="container mx-auto max-w-4xl px-4">
           
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs sm:text-sm font-bold text-primary mb-3">
-              <Sparkles className="h-4 w-4" />
-              <span>{isAr ? 'العام الدراسي الجديد ٢٠٢٤ - ٢٠٢٥' : 'Academic Year 2024 - 2025'}</span>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-3 py-1 text-xs font-medium text-foreground mb-3">
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              <span>{isAr ? 'العام الدراسي ٢٠٢٥ / ٢٠٢٦' : 'Academic Year 2025 / 2026'}</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground">
-              {isAr ? 'طلب التحاق بأكاديمية م. عمرو حاتم' : 'Academy Application & Admission Form'}
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              {isAr ? 'طلب التحاق بأكاديمية م. عمرو حاتم' : 'Academy Application & Admission'}
             </h1>
-            <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-xl mx-auto">
+            <p className="mt-2 text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
               {isAr
-                ? 'املأ الاستمارة وسنتواصل معك فوراً لتأكيد الحجز وتحديد المواعيد والمجموعة المناسبة.'
+                ? 'املأ الاستمارة وسنتواصل معك لتأكيد الحجز وتحديد المواعيد والمجموعة المناسبة.'
                 : 'Fill in your details below to register for in-person or online Physics & Math groups.'}
             </p>
           </div>
@@ -192,7 +192,7 @@ export default function ApplyPage({
               <div className="lg:col-span-2">
                 <form
                   onSubmit={handleSubmit}
-                  className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm space-y-5"
+                  className="rounded-lg border border-border bg-card p-5 sm:p-6 shadow-sm space-y-4"
                 >
                   {/* Student Name */}
                   <div className="space-y-1.5">
@@ -342,7 +342,7 @@ export default function ApplyPage({
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#0F2A4A] text-white hover:bg-[#0F2A4A]/90 dark:bg-[#F2B134] dark:text-[#0F2A4A] py-3.5 px-6 font-bold text-sm sm:text-base shadow-lg transition-transform hover:scale-[1.01]"
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-[#1f883d] dark:bg-[#238636] hover:bg-[#1a7f37] dark:hover:bg-[#2ea043] text-white py-2.5 px-5 font-semibold text-sm shadow-sm transition-colors"
                   >
                     <Send className="h-4 w-4" />
                     <span>{isAr ? 'إرسال طلب الانضمام الآن' : 'Submit Admission Request'}</span>
@@ -351,9 +351,9 @@ export default function ApplyPage({
               </div>
 
               {/* Sidebar Info Column */}
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Contact Card */}
-                <div className="rounded-3xl border border-border bg-card p-6 shadow-sm space-y-4">
+                <div className="rounded-lg border border-border bg-card p-5 shadow-sm space-y-3">
                   <h3 className="font-bold text-foreground text-base flex items-center gap-2">
                     <Phone className="h-4 w-4 text-primary" />
                     <span>{isAr ? 'التواصل المباشر' : 'Direct Contact'}</span>
@@ -381,9 +381,9 @@ export default function ApplyPage({
                 </div>
 
                 {/* Benefits Card */}
-                <div className="rounded-3xl border border-border bg-muted/30 p-6 space-y-3 text-xs sm:text-sm">
-                  <h4 className="font-bold text-foreground flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4 text-[#14A3A3]" />
+                <div className="rounded-lg border border-border bg-muted/30 p-5 space-y-3 text-xs sm:text-sm">
+                  <h4 className="font-semibold text-foreground flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                     <span>{isAr ? 'ماذا بعد إرسال الطلب؟' : 'What Happens Next?'}</span>
                   </h4>
                   <ul className="space-y-2 text-muted-foreground leading-relaxed">

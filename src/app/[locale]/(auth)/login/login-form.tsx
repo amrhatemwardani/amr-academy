@@ -6,19 +6,10 @@ import { teacherLogin, studentLogin, type LoginState } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Eye,
-  EyeOff,
-  GraduationCap,
-  BookOpen,
-  MessageCircle,
-  Phone,
-  Youtube,
-  HelpCircle,
-} from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type Tab = 'teacher' | 'student'
+type Tab = 'student' | 'teacher'
 
 interface LoginFormProps {
   locale: string
@@ -27,7 +18,8 @@ interface LoginFormProps {
 const initialState: LoginState = {}
 
 export function LoginForm({ locale }: LoginFormProps) {
-  const [tab, setTab] = useState<Tab>('teacher')
+  // Default to student as requested
+  const [tab, setTab] = useState<Tab>('student')
   const [showPassword, setShowPassword] = useState(false)
 
   const [teacherState, teacherAction, teacherPending] = useActionState(
@@ -48,50 +40,36 @@ export function LoginForm({ locale }: LoginFormProps) {
   const isAr = locale === 'ar'
 
   const blockedMessage = isAr
-    ? 'تم تعليق الحساب. يرجى التواصل مع م. عمرو حاتم لإعادة التفعيل.'
-    : 'Your account has been suspended. Please contact Eng. Amr Hatem for reactivation.'
+    ? 'تم تعليق الحساب. يرجى التواصل مع إدارة الأكاديمية.'
+    : 'Your account has been suspended. Please contact the administrator.'
 
   return (
-    <div className="space-y-6 rounded-2xl border border-border/80 bg-card/60 backdrop-blur-xl p-6 sm:p-8 shadow-xl shadow-black/5">
-      {/* Header text */}
-      <div className="space-y-1">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">
-          {isAr ? 'تسجيل الدخول' : 'Welcome back'}
-        </h2>
-        <p className="text-muted-foreground text-xs sm:text-sm">
-          {isAr
-            ? 'سجل دخولك لمتابعة الحصص، الامتحانات، والواجبات الدراسية'
-            : 'Sign in to access your dashboard, exams, and classes'}
-        </p>
-      </div>
-
-      {/* Role Switcher Tabs */}
-      <div className="grid grid-cols-2 p-1 gap-1 rounded-xl bg-muted/60 border border-border">
-        <button
-          type="button"
-          onClick={() => setTab('teacher')}
-          className={cn(
-            'flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs sm:text-sm font-semibold transition-all duration-200',
-            tab === 'teacher'
-              ? 'bg-background text-foreground shadow-sm ring-1 ring-border'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          <GraduationCap className="h-4 w-4 text-primary" />
-          <span>{isAr ? 'بوابة المعلم' : 'Teacher Portal'}</span>
-        </button>
+    <div className="rounded-md border border-border bg-card p-5 sm:p-6 shadow-sm">
+      {/* Role Switcher Tabs (GitHub segmented style) */}
+      <div className="flex border-b border-border mb-4 pb-2">
         <button
           type="button"
           onClick={() => setTab('student')}
           className={cn(
-            'flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs sm:text-sm font-semibold transition-all duration-200',
+            'flex-1 text-center py-1.5 text-xs font-semibold rounded transition-colors',
             tab === 'student'
-              ? 'bg-background text-foreground shadow-sm ring-1 ring-border'
+              ? 'text-foreground border-b-2 border-primary font-bold'
               : 'text-muted-foreground hover:text-foreground'
           )}
         >
-          <BookOpen className="h-4 w-4 text-secondary" />
-          <span>{isAr ? 'بوابة الطالب' : 'Student Portal'}</span>
+          {isAr ? 'حساب الطالب' : 'Student'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('teacher')}
+          className={cn(
+            'flex-1 text-center py-1.5 text-xs font-semibold rounded transition-colors',
+            tab === 'teacher'
+              ? 'text-foreground border-b-2 border-primary font-bold'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          {isAr ? 'حساب المعلم' : 'Teacher'}
         </button>
       </div>
 
@@ -99,31 +77,30 @@ export function LoginForm({ locale }: LoginFormProps) {
       {(state.error || (blockedParam && tab === 'student')) && (
         <div
           role="alert"
-          className="rounded-xl bg-destructive/10 border border-destructive/20 p-3.5 text-xs sm:text-sm text-destructive leading-relaxed"
+          className="mb-4 rounded-md bg-destructive/10 border border-destructive/20 p-3 text-xs text-destructive"
         >
           {state.error || blockedMessage}
         </div>
       )}
 
-      {/* Sign-in Form */}
+      {/* Form */}
       <form action={action} className="space-y-4">
         <input type="hidden" name="locale" value={locale} />
 
         {tab === 'teacher' ? (
           <div className="space-y-1.5">
-            <Label htmlFor="teacher-email" className="text-xs font-semibold">
-              {isAr ? 'البريد الإلكتروني للمعلم' : 'Teacher Email'}
+            <Label htmlFor="teacher-email" className="text-xs font-medium text-foreground">
+              {isAr ? 'البريد الإلكتروني' : 'Email address'}
             </Label>
             <Input
               id="teacher-email"
               name="email"
               type="email"
               autoComplete="email"
-              placeholder="engamrhatem@gmail.com"
               required
               aria-describedby={state.fieldErrors?.email ? 'teacher-email-error' : undefined}
               className={cn(
-                'h-11 rounded-xl',
+                'h-9 rounded-md text-sm border-input bg-background',
                 state.fieldErrors?.email && 'border-destructive'
               )}
             />
@@ -135,19 +112,19 @@ export function LoginForm({ locale }: LoginFormProps) {
           </div>
         ) : (
           <div className="space-y-1.5">
-            <Label htmlFor="student-identifier" className="text-xs font-semibold">
-              {isAr ? 'كود الطالب أو رقم الهاتف' : 'Student Code or Phone Number'}
+            <Label htmlFor="student-identifier" className="text-xs font-medium text-foreground">
+              {isAr ? 'كود الطالب أو رقم الهاتف' : 'Student code or phone'}
             </Label>
             <Input
               id="student-identifier"
               name="identifier"
               type="text"
               autoComplete="username"
-              placeholder={isAr ? 'مثال: S1001 أو 01012345678' : 'e.g. S1001 or 01012345678'}
+              placeholder={isAr ? 'مثال: S1032' : 'e.g. S1032'}
               required
               aria-describedby={state.fieldErrors?.identifier ? 'identifier-error' : undefined}
               className={cn(
-                'h-11 rounded-xl',
+                'h-9 rounded-md text-sm border-input bg-background',
                 state.fieldErrors?.identifier && 'border-destructive'
               )}
             />
@@ -161,21 +138,18 @@ export function LoginForm({ locale }: LoginFormProps) {
 
         {/* Password */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="login-password" className="text-xs font-semibold">
-              {isAr ? 'كلمة المرور' : 'Password'}
-            </Label>
-          </div>
+          <Label htmlFor="login-password" className="text-xs font-medium text-foreground">
+            {isAr ? 'كلمة المرور' : 'Password'}
+          </Label>
           <div className="relative">
             <Input
               id="login-password"
               name="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
-              placeholder="••••••••"
               required
               className={cn(
-                'h-11 rounded-xl pe-11',
+                'h-9 rounded-md pe-9 text-sm border-input bg-background',
                 state.fieldErrors?.password && 'border-destructive'
               )}
               aria-describedby={state.fieldErrors?.password ? 'password-error' : undefined}
@@ -183,7 +157,7 @@ export function LoginForm({ locale }: LoginFormProps) {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute end-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+              className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -196,58 +170,18 @@ export function LoginForm({ locale }: LoginFormProps) {
           )}
         </div>
 
-        {/* Submit Button */}
+        {/* GitHub Green Submit Button */}
         <Button
           type="submit"
-          className="w-full h-11 rounded-xl text-sm font-semibold shadow-md bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-200"
+          className="w-full h-9 rounded-md text-sm font-semibold text-white bg-[#1f883d] dark:bg-[#238636] hover:bg-[#1a7f37] dark:hover:bg-[#2ea043] transition-colors shadow-sm"
           loading={pending}
           disabled={pending}
         >
           {pending
-            ? (isAr ? 'جاري التحقق وتأكيد الدخول...' : 'Signing in...')
-            : (isAr ? 'تسجيل الدخول' : 'Sign In')}
+            ? (isAr ? 'جاري الدخول...' : 'Signing in...')
+            : (isAr ? 'تسجيل الدخول' : 'Sign in')}
         </Button>
       </form>
-
-      {/* Teacher Contact & YouTube Channel Card */}
-      <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-3">
-        <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
-          <HelpCircle className="h-4 w-4 text-accent" />
-          <span>{isAr ? 'للتواصل والاستفسار مع م. عمرو حاتم:' : 'Need help? Contact Eng. Amr Hatem:'}</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 pt-0.5">
-          {/* WhatsApp Direct */}
-          <a
-            href="https://wa.me/201012006316"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 p-2.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold transition-all hover:scale-[1.02]"
-          >
-            <MessageCircle className="h-4 w-4 shrink-0" />
-            <span dir="ltr">واتساب مباشر</span>
-          </a>
-
-          {/* YouTube Channel */}
-          <a
-            href="https://www.youtube.com/@Eng.AmrHatem"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 p-2.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-semibold transition-all hover:scale-[1.02]"
-          >
-            <Youtube className="h-4 w-4 shrink-0" />
-            <span>قناة اليوتيوب</span>
-          </a>
-        </div>
-
-        <div className="flex items-center justify-center gap-2 text-[11px] text-muted-foreground pt-1">
-          <Phone className="h-3 w-3 text-secondary" />
-          <span>{isAr ? 'هاتف / واتساب:' : 'Phone / WhatsApp:'}</span>
-          <a href="tel:+201012006316" className="font-semibold text-foreground hover:underline" dir="ltr">
-            +20 101 200 6316
-          </a>
-        </div>
-      </div>
     </div>
   )
 }
