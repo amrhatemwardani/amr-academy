@@ -23,6 +23,7 @@ import {
   getEnrolledBiometric,
   saveEnrolledBiometric,
   removeEnrolledBiometric,
+  listEnrolledBiometrics,
   isPlatformAuthenticatorAvailable,
   getClientDeviceName,
   promptNativeBiometrics,
@@ -43,6 +44,7 @@ export function FaceIdLoginModal({ locale, isOpen, onClose, initialIdentifier = 
   const router = useRouter()
 
   const [enrolledProfile, setEnrolledProfile] = useState<EnrolledBiometricProfile | null>(null)
+  const [allEnrolledProfiles, setAllEnrolledProfiles] = useState<EnrolledBiometricProfile[]>([])
   const [activeTab, setActiveTab] = useState<'scan' | 'camera' | 'setup'>('scan')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -60,23 +62,36 @@ export function FaceIdLoginModal({ locale, isOpen, onClose, initialIdentifier = 
   const [scanProgress, setScanProgress] = useState(0)
   const [scanStatusText, setScanStatusText] = useState('')
 
-  // Load existing enrolled biometric on mount or modal open
+  // Load existing enrolled biometric safely for this PC
   useEffect(() => {
     if (isOpen) {
       setError(null)
       setSuccessMsg(null)
-      const existing = getEnrolledBiometric()
+      const all = listEnrolledBiometrics()
+      setAllEnrolledProfiles(all)
+
+      const existing = getEnrolledBiometric(initialIdentifier)
       setEnrolledProfile(existing)
+
       if (existing) {
         setActiveTab('scan')
       } else {
         setActiveTab('setup')
-        if (initialIdentifier) setSetupIdentifier(initialIdentifier)
+        if (initialIdentifier) {
+          setSetupIdentifier(initialIdentifier)
+          if (all.length > 0) {
+            setError(
+              isAr
+                ? `الحساب (${initialIdentifier}) غير مفعل ببصمة الوجه على هذا الجهاز بعد. أدخل كلمة المرور لتفعيله.`
+                : `Account (${initialIdentifier}) is not enrolled for Face ID on this PC. Please enter password once to enable.`
+            )
+          }
+        }
       }
     } else {
       stopCamera()
     }
-  }, [isOpen, initialIdentifier])
+  }, [isOpen, initialIdentifier, isAr])
 
   // Stop camera stream cleanly
   function stopCamera() {
@@ -201,7 +216,11 @@ export function FaceIdLoginModal({ locale, isOpen, onClose, initialIdentifier = 
 
       setTimeout(() => {
         onClose()
-        const dest = res.role === 'teacher' ? `/${locale}/dashboard` : `/${locale}/portal`
+        const dest = res.mustChangePassword
+          ? `/${locale}/change-password`
+          : res.role === 'teacher'
+          ? `/${locale}/dashboard`
+          : `/${locale}/portal`
         router.push(dest)
         router.refresh()
       }, 700)
@@ -414,6 +433,44 @@ export function FaceIdLoginModal({ locale, isOpen, onClose, initialIdentifier = 
                 <span>{isAr ? 'مفعل' : 'Ready'}</span>
               </div>
             </div>
+
+            {/* Same PC Multi-Account Switcher */}
+            {allEnrolledProfiles.length > 1 && (
+              <div className="p-3 rounded-2xl bg-gray-50 dark:bg-[#151c2c] border border-gray-200 dark:border-slate-800 text-start space-y-2">
+                <p className="text-[11px] font-bold text-gray-500 dark:text-slate-400">
+                  {isAr ? 'حسابات مسجلة على هذا الكمبيوتر:' : 'Accounts on this PC:'}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {allEnrolledProfiles.map((p) => (
+                    <button
+                      key={p.studentCode}
+                      type="button"
+                      onClick={() => {
+                        setEnrolledProfile(p)
+                        setError(null)
+                      }}
+                      className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-all ${
+                        enrolledProfile?.studentCode === p.studentCode
+                          ? 'bg-[#0050e3] text-white border-transparent shadow-xs'
+                          : 'bg-white dark:bg-[#1a2235] text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {p.studentName} ({p.studentCode})
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSetupIdentifier('')
+                      setActiveTab('setup')
+                    }}
+                    className="px-2 py-1 rounded-xl text-xs font-bold border border-dashed border-gray-300 dark:border-slate-700 text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                  >
+                    + {isAr ? 'حساب آخر' : 'Add another'}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Glowing Face Scan Radar Button */}
             <div className="py-3 flex flex-col items-center">

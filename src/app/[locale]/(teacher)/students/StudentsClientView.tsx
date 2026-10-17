@@ -20,6 +20,8 @@ import {
   UserX,
   Archive,
   ChevronDown,
+  KeyRound,
+  ShieldCheck,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -325,6 +327,14 @@ export function StudentsClientView({ initialStudents, classes }: StudentsClientV
             <Phone className="h-4 w-4 text-emerald-600" />
             <span>{isAr ? 'رسالة واتساب جماعية' : 'WhatsApp Broadcast'}</span>
           </Button>
+
+          <Link
+            href={`/${locale}/login-audit`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-300 text-xs font-bold hover:bg-amber-100 dark:hover:bg-amber-950/60 transition-colors shadow-xs"
+          >
+            <KeyRound className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+            <span>{isAr ? 'بيانات الدخول وسجل الأمان 🔐' : 'Credentials & Login Audit 🔐'}</span>
+          </Link>
 
           <ImportCSVDialog classes={classes} onSuccess={() => router.refresh()} />
 

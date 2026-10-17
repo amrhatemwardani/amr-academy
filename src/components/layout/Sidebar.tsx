@@ -25,6 +25,7 @@ import {
   BookMarked,
   UserPlus,
   Award,
+  ShieldCheck,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { LogoutButton } from '@/components/ui/LogoutButton'
@@ -33,6 +34,7 @@ const getNavItems = (locale: string) => [
   { href: `/${locale}/dashboard`,      labelKey: 'dashboard',    icon: LayoutDashboard },
   { href: `/${locale}/applications`,   labelKey: 'applications', icon: UserPlus },
   { href: `/${locale}/students`,       labelKey: 'students',     icon: Users },
+  { href: `/${locale}/login-audit`,    labelKey: 'loginAudit',   icon: ShieldCheck },
   { href: `/${locale}/classes`,        labelKey: 'classes',      icon: BookOpen },
   { href: `/${locale}/attendance`,     labelKey: 'attendance',   icon: CalendarCheck },
   { href: `/${locale}/calendar`,       labelKey: 'calendar',     icon: Calendar },

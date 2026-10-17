@@ -5,6 +5,8 @@
  */
 
 const STORAGE_KEY = 'amr_academy_face_id_cred'
+const STORAGE_MAP_KEY = 'amr_academy_face_id_creds_map'
+const LAST_ACTIVE_ID_KEY = 'amr_academy_face_id_last_active'
 
 export interface EnrolledBiometricProfile {
   identifier: string
@@ -16,6 +18,34 @@ export interface EnrolledBiometricProfile {
   credentialId?: string
   enrolledAt: string
   deviceName: string
+}
+
+function normalizeKey(id: string): string {
+  return id.trim().toLowerCase()
+}
+
+function getProfilesMap(): Record<string, EnrolledBiometricProfile> {
+  if (typeof window === 'undefined') return {}
+  try {
+    const raw = localStorage.getItem(STORAGE_MAP_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch {
+    // fallback
+  }
+
+  // Check legacy single-profile key
+  try {
+    const legacy = localStorage.getItem(STORAGE_KEY)
+    if (legacy) {
+      const parsed = JSON.parse(legacy) as EnrolledBiometricProfile
+      const key = normalizeKey(parsed.studentCode || parsed.identifier)
+      return { [key]: parsed }
+    }
+  } catch {
+    // ignore
+  }
+
+  return {}
 }
 
 /**
@@ -58,38 +88,129 @@ export function getClientDeviceName(): string {
 }
 
 /**
- * Save enrolled profile in browser secure storage
+ * Save enrolled profile in browser secure storage (supports multiple students on the same PC)
  */
 export function saveEnrolledBiometric(profile: EnrolledBiometricProfile) {
   if (typeof window === 'undefined') return
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
+    const map = getProfilesMap()
+    const primaryKey = normalizeKey(profile.studentCode || profile.identifier)
+    map[primaryKey] = profile
+
+    // Also alias by email if different
+    if (profile.email) {
+      map[normalizeKey(profile.email)] = profile
+    }
+
+    localStorage.setItem(STORAGE_MAP_KEY, JSON.stringify(map))
+    localStorage.setItem(LAST_ACTIVE_ID_KEY, primaryKey)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile)) // legacy sync
   } catch (err) {
     console.error('Failed to save biometric credentials:', err)
   }
 }
 
 /**
- * Get enrolled profile from browser storage
+ * Get enrolled profile from browser storage safely for this PC.
+ * If identifier is provided, returns ONLY the profile enrolled for that specific student code.
+ * If identifier is NOT provided, returns the last active enrolled profile.
  */
-export function getEnrolledBiometric(): EnrolledBiometricProfile | null {
+export function getEnrolledBiometric(identifier?: string): EnrolledBiometricProfile | null {
   if (typeof window === 'undefined') return null
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
-    return JSON.parse(raw) as EnrolledBiometricProfile
+    const map = getProfilesMap()
+
+    if (identifier && identifier.trim()) {
+      const cleanId = normalizeKey(identifier)
+      // Check exact match in map
+      if (map[cleanId]) return map[cleanId]
+
+      // Check case-insensitive match by studentCode or email
+      for (const key of Object.keys(map)) {
+        const p = map[key]
+        if (
+          normalizeKey(p.studentCode) === cleanId ||
+          normalizeKey(p.identifier) === cleanId ||
+          normalizeKey(p.email) === cleanId
+        ) {
+          return p
+        }
+      }
+      return null
+    }
+
+    // No identifier provided: return last active profile or first available
+    const lastActive = localStorage.getItem(LAST_ACTIVE_ID_KEY)
+    if (lastActive && map[lastActive]) {
+      return map[lastActive]
+    }
+
+    const allKeys = Object.keys(map)
+    if (allKeys.length > 0) {
+      return map[allKeys[0]]
+    }
+
+    return null
   } catch {
     return null
   }
 }
 
 /**
- * Clear enrolled biometric from browser storage
+ * List all enrolled student accounts registered on this PC
  */
-export function removeEnrolledBiometric() {
+export function listEnrolledBiometrics(): EnrolledBiometricProfile[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const map = getProfilesMap()
+    const seen = new Set<string>()
+    const list: EnrolledBiometricProfile[] = []
+
+    for (const key of Object.keys(map)) {
+      const profile = map[key]
+      const uniqueId = normalizeKey(profile.studentCode || profile.identifier)
+      if (!seen.has(uniqueId)) {
+        seen.add(uniqueId)
+        list.push(profile)
+      }
+    }
+    return list
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Clear enrolled biometric from browser storage for a specific student or active account
+ */
+export function removeEnrolledBiometric(identifier?: string) {
   if (typeof window === 'undefined') return
   try {
-    localStorage.removeItem(STORAGE_KEY)
+    const map = getProfilesMap()
+
+    if (identifier && identifier.trim()) {
+      const cleanId = normalizeKey(identifier)
+      delete map[cleanId]
+      for (const k of Object.keys(map)) {
+        if (normalizeKey(map[k].studentCode) === cleanId || normalizeKey(map[k].email) === cleanId) {
+          delete map[k]
+        }
+      }
+    } else {
+      const lastActive = localStorage.getItem(LAST_ACTIVE_ID_KEY)
+      if (lastActive) delete map[lastActive]
+    }
+
+    localStorage.setItem(STORAGE_MAP_KEY, JSON.stringify(map))
+
+    const remaining = Object.keys(map)
+    if (remaining.length === 0) {
+      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(LAST_ACTIVE_ID_KEY)
+    } else {
+      localStorage.setItem(LAST_ACTIVE_ID_KEY, remaining[0])
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(map[remaining[0]]))
+    }
   } catch (err) {
     console.error('Failed to remove biometric credentials:', err)
   }

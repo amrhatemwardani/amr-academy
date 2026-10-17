@@ -47,13 +47,24 @@ export default async function ChangePasswordPage({
         aria-hidden="true"
       />
 
-      {/* Back button */}
-      <Link
-        href={user.role === 'teacher' ? `/${locale}/dashboard` : `/${locale}/portal`}
-        className="absolute top-5 start-5 z-20 inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur-md px-4 py-2 text-xs font-bold text-gray-700 shadow-sm hover:bg-white transition-all hover:scale-105"
-      >
-        <span>{isAr ? '→ العودة للمنصة' : '← Back to Portal'}</span>
-      </Link>
+      {/* Back / Sign out button */}
+      {user.mustChangePassword ? (
+        <form action="/auth/signout" method="post" className="absolute top-5 start-5 z-20">
+          <button
+            type="submit"
+            className="inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur-md px-4 py-2 text-xs font-bold text-gray-700 shadow-sm hover:bg-white transition-all hover:scale-105"
+          >
+            <span>{isAr ? 'تسجيل الخروج' : 'Sign Out'}</span>
+          </button>
+        </form>
+      ) : (
+        <Link
+          href={user.role === 'teacher' ? `/${locale}/dashboard` : `/${locale}/portal`}
+          className="absolute top-5 start-5 z-20 inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur-md px-4 py-2 text-xs font-bold text-gray-700 shadow-sm hover:bg-white transition-all hover:scale-105"
+        >
+          <span>{isAr ? '→ العودة للمنصة' : '← Back to Portal'}</span>
+        </Link>
+      )}
 
       <div className="w-full max-w-md relative z-10 space-y-4">
         {/* Brand Header */}
@@ -75,7 +86,7 @@ export default async function ChangePasswordPage({
           style={{ boxShadow: '0 25px 60px -15px rgba(20, 80, 50, 0.12)' }}
         >
           <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-gray-100" />}>
-            <ChangePasswordForm locale={locale} role={user.role} />
+            <ChangePasswordForm locale={locale} role={user.role} mustChangePassword={user.mustChangePassword} />
           </Suspense>
         </div>
       </div>

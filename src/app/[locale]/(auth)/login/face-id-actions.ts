@@ -108,13 +108,17 @@ export interface VerifyFaceIdInput {
   biometricToken: string
 }
 
+import { recordLoginAuditAction } from '@/lib/audit/actions'
+
 export interface VerifyFaceIdResult {
   success?: boolean
   error?: string
   email?: string
+  studentName?: string
   tokenHash?: string
   emailOtp?: string
   role?: 'student' | 'teacher'
+  mustChangePassword?: boolean
 }
 
 /**
@@ -132,6 +136,12 @@ export async function verifyFaceIdLoginAction(input: VerifyFaceIdInput): Promise
 
     const targetEmail = await resolveLoginIdentifierAction(rawId)
     if (!targetEmail) {
+      await recordLoginAuditAction({
+        identifier: rawId,
+        method: 'face_id',
+        success: false,
+        failureReason: 'Account not found',
+      })
       return { error: 'Account not found.' }
     }
 
@@ -148,17 +158,37 @@ export async function verifyFaceIdLoginAction(input: VerifyFaceIdInput): Promise
     )
 
     if (!user) {
+      await recordLoginAuditAction({
+        identifier: rawId,
+        method: 'face_id',
+        success: false,
+        failureReason: 'User not found in auth',
+      })
       return { error: 'User account not found.' }
     }
 
     const storedHash = user.user_metadata?.biometric_token_hash
     if (!storedHash) {
+      await recordLoginAuditAction({
+        actorId: user.id,
+        identifier: rawId,
+        method: 'face_id',
+        success: false,
+        failureReason: 'Face ID not enrolled',
+      })
       return { error: 'Face ID is not enrolled for this account. Please set it up once.' }
     }
 
     // Verify token hash
     const incomingHash = hashToken(token)
     if (incomingHash !== storedHash) {
+      await recordLoginAuditAction({
+        actorId: user.id,
+        identifier: rawId,
+        method: 'face_id',
+        success: false,
+        failureReason: 'Biometric token mismatch',
+      })
       return { error: 'Biometric token mismatch. Please re-enable Face ID.' }
     }
 
@@ -174,12 +204,33 @@ export async function verifyFaceIdLoginAction(input: VerifyFaceIdInput): Promise
 
     const props = linkRes.data.properties
 
+    // Fetch profile to verify role and must_change_password
+    const { data: profile } = await (admin.from('profiles' as any) as any)
+      .select('role, full_name, must_change_password')
+      .eq('id', user.id)
+      .single()
+
+    const role = (profile?.role as any) || (user.user_metadata?.role as any) || 'student'
+    const mustChange = profile?.must_change_password === true
+
+    // Log successful Face ID login audit
+    await recordLoginAuditAction({
+      actorId: user.id,
+      identifier: rawId,
+      studentCode: rawId.startsWith('S') || rawId.startsWith('s') ? rawId.toUpperCase() : null,
+      studentName: profile?.full_name || null,
+      method: 'face_id',
+      success: true,
+    })
+
     return {
       success: true,
       email: targetEmail,
+      studentName: profile?.full_name || undefined,
       tokenHash: props.hashed_token,
       emailOtp: props.email_otp,
-      role: (user.user_metadata?.role as any) || 'student',
+      role,
+      mustChangePassword: mustChange,
     }
   } catch (err: any) {
     console.error('Face ID verification error:', err)

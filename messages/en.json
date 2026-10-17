@@ -41,6 +41,7 @@
     "dashboard": "Dashboard",
     "applications": "Applications",
     "students": "Students",
+    "loginAudit": "Login & Security",
     "classes": "Classes",
     "attendance": "Attendance",
     "finance": "Finance",

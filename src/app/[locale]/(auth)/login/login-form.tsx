@@ -6,6 +6,7 @@ import { Eye, EyeOff, Loader2, HelpCircle, CheckCircle2, MessageSquare, KeyRound
 import { createClient } from '@/lib/supabase/client'
 import { resolveLoginIdentifierAction, requestPasswordResetAction } from './actions'
 import { FaceIdLoginModal } from '@/components/auth/FaceIdLoginModal'
+import { recordLoginAuditAction } from '@/lib/audit/actions'
 
 interface Props {
   locale: string
@@ -58,6 +59,15 @@ export function LoginForm({ locale }: Props) {
       })
 
       if (signInError) {
+        // Record failed attempt in audit log
+        recordLoginAuditAction({
+          identifier: rawInput,
+          method: 'password',
+          success: false,
+          failureReason: signInError.message,
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+        }).catch(() => {})
+
         // Helpful diagnostic message
         if (tab === 'student' && !rawInput.includes('@')) {
           setError(
@@ -80,15 +90,34 @@ export function LoginForm({ locale }: Props) {
         return
       }
 
-      // Check role and redirect
+      // Check role, full_name, and must_change_password
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, full_name, must_change_password')
         .eq('id', data.user.id)
         .single()
 
       const role = (profile as any)?.role ?? 'student'
-      const dest = redirectTo ?? (role === 'teacher' ? `/${locale}/dashboard` : `/${locale}/portal`)
+      const mustChange = (profile as any)?.must_change_password === true
+
+      // Record successful login in audit log
+      recordLoginAuditAction({
+        actorId: data.user.id,
+        identifier: rawInput,
+        studentCode: rawInput.startsWith('S') || rawInput.startsWith('s') ? rawInput.toUpperCase() : null,
+        studentName: (profile as any)?.full_name || null,
+        method: 'password',
+        success: true,
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+      }).catch(() => {})
+
+      let dest = redirectTo
+      if (mustChange && role === 'student') {
+        dest = `/${locale}/change-password`
+      } else if (!dest) {
+        dest = role === 'teacher' ? `/${locale}/dashboard` : `/${locale}/portal`
+      }
+
       router.push(dest)
       router.refresh()
     } catch (err) {

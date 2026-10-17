@@ -82,6 +82,11 @@ export async function requireStudent(locale = 'en'): Promise<AuthUser> {
     redirect(`/${locale}/dashboard`)
   }
 
+  // Force password change if required by teacher/admin
+  if (user.mustChangePassword) {
+    redirect(`/${locale}/change-password`)
+  }
+
   // Check if student is active
   const supabase = await createClient()
   const { data: studentRecord } = await (supabase.from('students' as any) as any)

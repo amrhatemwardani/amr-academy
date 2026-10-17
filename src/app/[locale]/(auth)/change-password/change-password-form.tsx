@@ -9,6 +9,7 @@ import Link from 'next/link'
 interface ChangePasswordFormProps {
   locale: string
   role?: string
+  mustChangePassword?: boolean
 }
 
 const initialState: ChangePasswordState = {}
@@ -27,7 +28,7 @@ function getStrength(pass: string): { score: number; labelEn: string; labelAr: s
   return { score: 4, labelEn: 'Strong', labelAr: 'قوية وممتازة 🛡️', color: 'bg-[#00e2ae]' }
 }
 
-export function ChangePasswordForm({ locale, role }: ChangePasswordFormProps) {
+export function ChangePasswordForm({ locale, role, mustChangePassword }: ChangePasswordFormProps) {
   const [state, formAction, isPending] = useActionState(
     changePasswordAction,
     initialState
@@ -60,6 +61,20 @@ export function ChangePasswordForm({ locale, role }: ChangePasswordFormProps) {
           </p>
         </div>
       </div>
+
+      {mustChangePassword && (
+        <div className="rounded-2xl bg-amber-50 border border-amber-300 p-3.5 text-xs text-amber-800 font-bold flex items-start gap-2.5">
+          <span className="text-base shrink-0">⚠️</span>
+          <div className="space-y-0.5 text-start">
+            <p>{isAr ? 'مطلوب تحديث كلمة المرور للمتابعة' : 'Password change required to proceed'}</p>
+            <p className="font-normal text-[11px] text-amber-700">
+              {isAr
+                ? 'طلب المعلم أو النظام تغيير كلمة المرور عند أول تسجيل دخول أو بعد إعادة التعيين. اكتب كلمة المرور المؤقتة ثم اختر كلمة مرورك الجديدة.'
+                : 'A password reset was required for your account. Please enter your temporary password and set a new password to continue.'}
+            </p>
+          </div>
+        </div>
+      )}
 
       {state.error && (
         <div
@@ -210,16 +225,18 @@ export function ChangePasswordForm({ locale, role }: ChangePasswordFormProps) {
         </button>
       </form>
 
-      {/* Return to Dashboard link */}
-      <div className="pt-2 text-center">
-        <Link
-          href={backHref}
-          className="inline-flex items-center gap-1.5 text-xs text-[#2563eb] hover:underline font-bold"
-        >
-          <BackIcon className="h-3.5 w-3.5" />
-          <span>{isAr ? 'العودة إلى البوابة التعليمية' : 'Back to Portal'}</span>
-        </Link>
-      </div>
+      {/* Return to Dashboard link (only if not forced) */}
+      {!mustChangePassword && (
+        <div className="pt-2 text-center">
+          <Link
+            href={backHref}
+            className="inline-flex items-center gap-1.5 text-xs text-[#2563eb] hover:underline font-bold"
+          >
+            <BackIcon className="h-3.5 w-3.5" />
+            <span>{isAr ? 'العودة إلى البوابة التعليمية' : 'Back to Portal'}</span>
+          </Link>
+        </div>
+      )}
     </div>
   )
 }
