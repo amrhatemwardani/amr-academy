@@ -16,115 +16,115 @@
    ════════════════════════════════════════════════════════════════ */
 @layer base {
   :root {
-    /* ── Clean White & GitHub Modern Minimalist Light Theme ───────── */
-    --background:           0 0% 100%;        /* #FFFFFF pure clean white */
-    --foreground:           218 17% 14%;      /* #1f2328 crisp GitHub text */
+    /* ── Kidtime Bright Educational Palette (Light) ────────────────── */
+    --background:           45 100% 98%;      /* warm cream #FFFDF5 */
+    --foreground:           220 25% 18%;      /* deep navy #222B3D */
 
-    --card:                 0 0% 100%;        /* #FFFFFF */
-    --card-foreground:      218 17% 14%;
+    --card:                 0 0% 100%;        /* white */
+    --card-foreground:      220 25% 18%;
 
     --popover:              0 0% 100%;
-    --popover-foreground:   218 17% 14%;
+    --popover-foreground:   220 25% 18%;
 
-    /* ── Primary: GitHub Green #1f883d ────────────────────────────── */
-    --primary:              137 54% 36%;      /* #1f883d */
-    --primary-foreground:   0 0% 100%;
+    /* ── Primary: Kinder Yellow #f6b407 ───────────────────────────── */
+    --primary:              42 94% 50%;       /* #f6b407 */
+    --primary-foreground:   220 25% 14%;
 
-    /* ── Secondary: GitHub Slate #24292f ─────────────────────────── */
-    --secondary:            215 14% 19%;      /* #24292f */
+    /* ── Secondary: Coral/Tomato #e47364 ─────────────────────────── */
+    --secondary:            9 70% 65%;        /* #e47364 */
     --secondary-foreground: 0 0% 100%;
 
-    --muted:                210 20% 98%;      /* #f6f8fa GitHub light muted */
-    --muted-foreground:     217 10% 43%;      /* #57606a */
+    --muted:                42 50% 94%;       /* warm light muted */
+    --muted-foreground:     220 15% 46%;
 
-    /* ── Accent: Warm Gold #F59E0B ────────────────────────────────── */
-    --accent:               38 92% 50%;
-    --accent-foreground:    218 17% 14%;
+    /* ── Accent: Vibrant Blue #0050e3 ────────────────────────────── */
+    --accent:               222 100% 45%;     /* #0050e3 */
+    --accent-foreground:    0 0% 100%;
 
-    /* ── Destructive #cf222e ──────────────────────────────────────── */
-    --destructive:          356 71% 47%;
+    /* ── Destructive #e51e6b ─────────────────────────────────────── */
+    --destructive:          334 77% 51%;      /* #e51e6b */
     --destructive-foreground: 0 0% 100%;
 
-    /* ── Borders & Inputs ────────────────────────────────────────── */
-    --border:               214 13% 86%;      /* #d0d7de GitHub border */
-    --input:                214 13% 86%;
-    --ring:                 212 92% 45%;
+    /* ── Borders & Inputs ─────────────────────────────────────────── */
+    --border:               220 15% 88%;
+    --input:                220 15% 92%;
+    --ring:                 42 94% 50%;
 
-    /* ── Radius ──────────────────────────────────────────────────── */
-    --radius:               0.5rem;
+    /* ── Radius (rounder and friendlier) ──────────────────────────── */
+    --radius:               1rem;
 
-    /* ── Charts ─────────────────────────────────────────────────── */
-    --chart-1:              137 54% 36%;
-    --chart-2:              212 92% 45%;
-    --chart-3:              38 92% 50%;
-    --chart-4:              356 71% 47%;
-    --chart-5:              173 80% 40%;
+    /* ── Charts ──────────────────────────────────────────────────── */
+    --chart-1:              42  94% 50%;
+    --chart-2:              222 100% 45%;
+    --chart-3:              334 77% 51%;
+    --chart-4:              165 100% 44%;
+    --chart-5:              9 70% 65%;
 
-    /* ── Sidebar ─────────────────────────────────────────────────── */
-    --sidebar-background:   0 0% 100%;
-    --sidebar-foreground:   218 17% 14%;
-    --sidebar-primary:      137 54% 36%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent:       210 20% 96%;
-    --sidebar-accent-foreground:  218 17% 14%;
-    --sidebar-border:       214 13% 86%;
-    --sidebar-ring:         212 92% 45%;
+    /* ── Sidebar ──────────────────────────────────────────────────── */
+    --sidebar-background:   220 28% 13%;
+    --sidebar-foreground:   42 60% 90%;
+    --sidebar-primary:      42  94% 50%;
+    --sidebar-primary-foreground: 220 25% 14%;
+    --sidebar-accent:       220 22% 19%;
+    --sidebar-accent-foreground:  42 60% 90%;
+    --sidebar-border:       220 20% 19%;
+    --sidebar-ring:         42  94% 50%;
 
-    /* ── Status Colors ───────────────────────────────────────────── */
-    --success:              137 54% 36%;
+    /* ── Status Colors ────────────────────────────────────────────── */
+    --success:              152 69% 38%;
     --success-foreground:   0 0% 100%;
-    --warning:              38  92% 50%;
-    --warning-foreground:   0 0% 10%;
-    --info:                 212 92% 45%;
+    --warning:              42  94% 50%;
+    --warning-foreground:   220 25% 14%;
+    --info:                 222 100% 45%;
     --info-foreground:      0 0% 100%;
   }
 
   .dark {
-    /* ── Exact GitHub Dark Palette (#0d1117 / #161b22) ──────────── */
-    --background:           215 28% 7%;       /* #0d1117 GitHub dark canvas */
-    --foreground:           210 24% 93%;      /* #e6edf3 GitHub dark text */
+    /* ── Dark Mode: Deep Space Educational ────────────────────────── */
+    --background:           220 30% 8%;       /* #0d1016 deep space */
+    --foreground:           42  40% 94%;      /* warm white */
 
-    --card:                 215 21% 11%;      /* #161b22 GitHub dark box */
-    --card-foreground:      210 24% 93%;
+    --card:                 220 26% 12%;      /* #151b26 */
+    --card-foreground:      42  40% 94%;
 
-    --popover:              215 21% 11%;
-    --popover-foreground:   210 24% 93%;
+    --popover:              220 26% 12%;
+    --popover-foreground:   42  40% 94%;
 
-    /* ── Primary in Dark: GitHub Green #238636 ────────────────────── */
-    --primary:              137 54% 36%;      /* #238636 */
-    --primary-foreground:   0 0% 100%;
+    /* ── Primary in Dark: Kinder Yellow #f6b407 ──────────────────── */
+    --primary:              42  94% 50%;
+    --primary-foreground:   220 30% 8%;
 
-    /* ── Secondary in Dark: GitHub Gray #30363d ──────────────────── */
-    --secondary:            215 14% 19%;      /* #30363d */
-    --secondary-foreground: 210 24% 93%;
+    /* ── Secondary in Dark: Coral #e47364 ───────────────────────── */
+    --secondary:            9 70% 65%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted:                215 18% 13%;      /* #21262d */
-    --muted-foreground:     217 10% 53%;      /* #7d8590 */
+    --muted:                220 22% 16%;
+    --muted-foreground:     220 15% 58%;
 
-    --accent:               38  92% 50%;
+    --accent:               222 100% 60%;
     --accent-foreground:    0 0% 100%;
 
-    --destructive:          356 71% 47%;
+    --destructive:          334 77% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --border:               215 14% 19%;      /* #30363d GitHub dark border */
-    --input:                215 14% 19%;
-    --ring:                 212 92% 50%;
+    --border:               220 20% 20%;
+    --input:                220 20% 20%;
+    --ring:                 42  94% 50%;
 
-    --chart-1:              137 54% 36%;
-    --chart-2:              212 92% 50%;
-    --chart-3:              38 92% 50%;
-    --chart-4:              356 71% 47%;
-    --chart-5:              173 80% 40%;
+    --chart-1:              42  94% 50%;
+    --chart-2:              222 100% 60%;
+    --chart-3:              334 77% 58%;
+    --chart-4:              165 100% 44%;
+    --chart-5:              9 70% 65%;
 
-    --sidebar-background:   215 28% 6%;       /* #090d13 */
-    --sidebar-foreground:   210 24% 93%;
-    --sidebar-primary:      137 54% 36%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent:       215 21% 11%;
-    --sidebar-accent-foreground:  210 24% 93%;
-    --sidebar-border:       215 14% 19%;
-    --sidebar-ring:         212 92% 50%;
+    --sidebar-background:   220 30% 6%;
+    --sidebar-foreground:   42  40% 94%;
+    --sidebar-primary:      42  94% 50%;
+    --sidebar-primary-foreground: 220 30% 8%;
+    --sidebar-accent:       220 26% 12%;
+    --sidebar-accent-foreground:  42 40% 94%;
+    --sidebar-border:       220 20% 14%;
+    --sidebar-ring:         42  94% 50%;
   }
 
   * {

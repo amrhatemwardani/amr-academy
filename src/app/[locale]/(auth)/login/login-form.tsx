@@ -1,187 +1,163 @@
 'use client'
 
-import { useActionState, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { teacherLogin, studentLogin, type LoginState } from './actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Eye, EyeOff } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
-type Tab = 'student' | 'teacher'
-
-interface LoginFormProps {
+interface Props {
   locale: string
 }
 
-const initialState: LoginState = {}
-
-export function LoginForm({ locale }: LoginFormProps) {
-  // Default to student as requested
-  const [tab, setTab] = useState<Tab>('student')
-  const [showPassword, setShowPassword] = useState(false)
-
-  const [teacherState, teacherAction, teacherPending] = useActionState(
-    teacherLogin,
-    initialState
-  )
-  const [studentState, studentAction, studentPending] = useActionState(
-    studentLogin,
-    initialState
-  )
-
-  const state = tab === 'teacher' ? teacherState : studentState
-  const action = tab === 'teacher' ? teacherAction : studentAction
-  const pending = tab === 'teacher' ? teacherPending : studentPending
-
-  const searchParams = useSearchParams()
-  const blockedParam = searchParams.get('error') === 'blocked'
+export function LoginForm({ locale }: Props) {
   const isAr = locale === 'ar'
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirectTo') || null
 
-  const blockedMessage = isAr
-    ? 'تم تعليق الحساب. يرجى التواصل مع إدارة الأكاديمية.'
-    : 'Your account has been suspended. Please contact the administrator.'
+  const [tab, setTab] = useState<'student' | 'teacher'>('student')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPass, setShowPass] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+
+    try {
+      const supabase = createClient()
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) {
+        setError(
+          isAr
+            ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+            : 'Invalid email or password'
+        )
+        return
+      }
+
+      if (!data.user) {
+        setError(isAr ? 'حدث خطأ. حاول مرة أخرى' : 'Something went wrong. Try again.')
+        return
+      }
+
+      // Get the user's role from profiles
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single()
+
+      const role = (profile as any)?.role ?? 'student'
+      const dest = redirectTo ?? (role === 'teacher' ? `/${locale}/dashboard` : `/${locale}/portal`)
+      router.push(dest)
+      router.refresh()
+    } catch {
+      setError(isAr ? 'حدث خطأ غير متوقع' : 'Unexpected error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="rounded-md border border-border bg-card p-5 sm:p-6 shadow-sm">
-      {/* Role Switcher Tabs (GitHub segmented style) */}
-      <div className="flex border-b border-border mb-4 pb-2">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
+      {/* Student / Teacher toggle */}
+      <div
+        className="flex rounded-full p-1 gap-1 mb-1"
+        style={{ background: '#f3f4f6' }}
+      >
+        {(['student', 'teacher'] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setTab(t)}
+            className="flex-1 rounded-full py-1.5 text-xs font-bold transition-all"
+            style={
+              tab === t
+                ? { background: '#e47364', color: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.12)' }
+                : { background: 'transparent', color: '#6b7280' }
+            }
+          >
+            {t === 'student'
+              ? (isAr ? '🎓 طالب' : '🎓 Student')
+              : (isAr ? '👨‍🏫 معلم' : '👨‍🏫 Teacher')}
+          </button>
+        ))}
+      </div>
+
+      {/* Email input — pill style */}
+      <div className="relative">
+        <input
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={isAr ? 'البريد الإلكتروني' : 'Email address'}
+          className="w-full rounded-full border border-gray-200 bg-gray-50 px-5 py-2.5 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:border-[#e47364] focus:ring-2 focus:ring-[#fde5d9] transition-all"
+          dir="ltr"
+        />
+      </div>
+
+      {/* Password input — pill style */}
+      <div className="relative">
+        <input
+          type={showPass ? 'text' : 'password'}
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={isAr ? 'كلمة المرور' : 'Password'}
+          className="w-full rounded-full border border-gray-200 bg-gray-50 px-5 py-2.5 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:border-[#e47364] focus:ring-2 focus:ring-[#fde5d9] transition-all ltr:pr-12 rtl:pl-12"
+          dir="ltr"
+        />
         <button
           type="button"
-          onClick={() => setTab('student')}
-          className={cn(
-            'flex-1 text-center py-1.5 text-xs font-semibold rounded transition-colors',
-            tab === 'student'
-              ? 'text-foreground border-b-2 border-primary font-bold'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
+          onClick={() => setShowPass(!showPass)}
+          tabIndex={-1}
+          className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
         >
-          {isAr ? 'حساب الطالب' : 'Student'}
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('teacher')}
-          className={cn(
-            'flex-1 text-center py-1.5 text-xs font-semibold rounded transition-colors',
-            tab === 'teacher'
-              ? 'text-foreground border-b-2 border-primary font-bold'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          {isAr ? 'حساب المعلم' : 'Teacher'}
+          {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       </div>
 
-      {/* Error alert */}
-      {(state.error || (blockedParam && tab === 'student')) && (
-        <div
-          role="alert"
-          className="mb-4 rounded-md bg-destructive/10 border border-destructive/20 p-3 text-xs text-destructive"
-        >
-          {state.error || blockedMessage}
+      {/* Remember me + Forgot password */}
+      <div className="flex items-center justify-between px-1">
+        <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+          <input type="checkbox" className="rounded accent-[#e47364]" />
+          {isAr ? 'تذكرني' : 'Remember me'}
+        </label>
+        <span className="text-xs text-[#0050e3] hover:underline cursor-pointer">
+          {isAr ? 'نسيت كلمة المرور؟' : 'Forgot password?'}
+        </span>
+      </div>
+
+      {/* Error message */}
+      {error && (
+        <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-2.5 text-xs text-red-600 text-center">
+          {error}
         </div>
       )}
 
-      {/* Form */}
-      <form action={action} className="space-y-4">
-        <input type="hidden" name="locale" value={locale} />
-
-        {tab === 'teacher' ? (
-          <div className="space-y-1.5">
-            <Label htmlFor="teacher-email" className="text-xs font-medium text-foreground">
-              {isAr ? 'البريد الإلكتروني' : 'Email address'}
-            </Label>
-            <Input
-              id="teacher-email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              aria-describedby={state.fieldErrors?.email ? 'teacher-email-error' : undefined}
-              className={cn(
-                'h-9 rounded-md text-sm border-input bg-background',
-                state.fieldErrors?.email && 'border-destructive'
-              )}
-            />
-            {state.fieldErrors?.email && (
-              <p id="teacher-email-error" className="text-xs text-destructive">
-                {state.fieldErrors.email[0]}
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-1.5">
-            <Label htmlFor="student-identifier" className="text-xs font-medium text-foreground">
-              {isAr ? 'كود الطالب أو رقم الهاتف' : 'Student code or phone'}
-            </Label>
-            <Input
-              id="student-identifier"
-              name="identifier"
-              type="text"
-              autoComplete="username"
-              placeholder={isAr ? 'مثال: S1032' : 'e.g. S1032'}
-              required
-              aria-describedby={state.fieldErrors?.identifier ? 'identifier-error' : undefined}
-              className={cn(
-                'h-9 rounded-md text-sm border-input bg-background',
-                state.fieldErrors?.identifier && 'border-destructive'
-              )}
-            />
-            {state.fieldErrors?.identifier && (
-              <p id="identifier-error" className="text-xs text-destructive">
-                {state.fieldErrors.identifier[0]}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Password */}
-        <div className="space-y-1.5">
-          <Label htmlFor="login-password" className="text-xs font-medium text-foreground">
-            {isAr ? 'كلمة المرور' : 'Password'}
-          </Label>
-          <div className="relative">
-            <Input
-              id="login-password"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="current-password"
-              required
-              className={cn(
-                'h-9 rounded-md pe-9 text-sm border-input bg-background',
-                state.fieldErrors?.password && 'border-destructive'
-              )}
-              aria-describedby={state.fieldErrors?.password ? 'password-error' : undefined}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-            >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
-          {state.fieldErrors?.password && (
-            <p id="password-error" className="text-xs text-destructive">
-              {state.fieldErrors.password[0]}
-            </p>
-          )}
-        </div>
-
-        {/* GitHub Green Submit Button */}
-        <Button
-          type="submit"
-          className="w-full h-9 rounded-md text-sm font-semibold text-white bg-[#1f883d] dark:bg-[#238636] hover:bg-[#1a7f37] dark:hover:bg-[#2ea043] transition-colors shadow-sm"
-          loading={pending}
-          disabled={pending}
-        >
-          {pending
-            ? (isAr ? 'جاري الدخول...' : 'Signing in...')
-            : (isAr ? 'تسجيل الدخول' : 'Sign in')}
-        </Button>
-      </form>
-    </div>
+      {/* Submit button — coral pill */}
+      <button
+        type="submit"
+        disabled={loading}
+        className="flex items-center justify-center gap-2 w-full rounded-full py-3 text-sm font-extrabold text-white mt-1 disabled:opacity-60 transition-all hover:opacity-90 active:scale-95 shadow-md"
+        style={{ background: '#e47364' }}
+      >
+        {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+        {loading
+          ? (isAr ? 'جاري الدخول...' : 'Signing in...')
+          : (isAr ? 'ادخل الآن ←' : "Let's go →")}
+      </button>
+    </form>
   )
 }
