@@ -151,15 +151,17 @@ export async function getStudentCredentialsListAction(): Promise<StudentCredenti
       const cleanCode = s.student_code || 'S1000'
       const fallbackEmail = `s${cleanCode.toLowerCase().replace(/[^0-9]/g, '')}@students.local`
 
+      const profileObj = Array.isArray(s.profiles) ? s.profiles[0] : s.profiles
+
       return {
         id: s.id,
         studentCode: cleanCode,
-        fullName: s.profiles?.full_name || 'Student',
+        fullName: profileObj?.full_name || 'Student',
         email: s.email || authUser?.email || fallbackEmail,
         phone: s.phone,
         parentPhone: s.parent_phone,
         status: s.status || 'active',
-        mustChangePassword: s.profiles?.must_change_password === true,
+        mustChangePassword: profileObj?.must_change_password === true,
         hasFaceId: hasBiometric,
         enrolledOn: s.enrolled_on || '',
       }

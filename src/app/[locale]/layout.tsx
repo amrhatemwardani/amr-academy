@@ -2,6 +2,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
+import { Toaster } from 'sonner'
 import type { Metadata } from 'next'
 
 export function generateStaticParams() {
@@ -46,6 +47,16 @@ export default async function LocaleLayout({
       <body>
         <NextIntlClientProvider messages={messages}>
           {children}
+          {/* Global toast notifications — available on all pages */}
+          <Toaster
+            position="bottom-right"
+            richColors
+            toastOptions={{
+              classNames: {
+                toast: 'border border-border bg-background text-foreground shadow-lg',
+              },
+            }}
+          />
         </NextIntlClientProvider>
       </body>
     </html>

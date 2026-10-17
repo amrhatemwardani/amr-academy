@@ -69,17 +69,48 @@ export async function resolveLoginIdentifierAction(rawIdentifier: string): Promi
 }
 
 /**
- * In-app password reset request
+ * In-app password reset request with student resolution & teacher notification
  */
 export async function requestPasswordResetAction(identifier: string) {
   try {
-    const resolvedEmail = await resolveLoginIdentifierAction(identifier)
+    const rawId = (identifier || '').trim()
+    const resolvedEmail = await resolveLoginIdentifierAction(rawId)
     if (!resolvedEmail) {
       return { error: 'Please enter a valid student code or email.' }
     }
 
     const admin = createAdminClient()
-    // Find teacher to notify
+
+    // 1. Look up student information to enrich notification for teacher
+    let studentName = ''
+    let studentCode = rawId
+    let studentPhone = ''
+
+    const { data: students } = await (admin.from('students' as any) as any)
+      .select('id, student_code, phone, parent_phone, profiles(full_name)')
+      .limit(200)
+
+    const cleanInput = rawId.toLowerCase().replace(/[^0-9a-z]/g, '')
+    const matched = (students as any[] || []).find((s) => {
+      const code = (s.student_code || '').toLowerCase().replace(/[^0-9a-z]/g, '')
+      const ph = (s.phone || '').replace(/[^0-9]/g, '')
+      const pph = (s.parent_phone || '').replace(/[^0-9]/g, '')
+      return (
+        code === cleanInput ||
+        code === `s${cleanInput}` ||
+        `s${code}` === cleanInput ||
+        ph.endsWith(cleanInput) ||
+        pph.endsWith(cleanInput)
+      )
+    })
+
+    if (matched) {
+      studentName = matched.profiles?.full_name || ''
+      studentCode = matched.student_code || rawId
+      studentPhone = matched.phone || matched.parent_phone || ''
+    }
+
+    // 2. Find teacher to notify
     const { data: teacher } = await (admin.from('profiles' as any) as any)
       .select('id')
       .eq('role', 'teacher')
@@ -87,28 +118,52 @@ export async function requestPasswordResetAction(identifier: string) {
       .single()
 
     if (teacher?.id) {
+      const title = `طلب استعادة كلمة المرور: ${studentName || studentCode}`
+      const body = `الطالب: ${studentName || 'غير محدد'} | كود: ${studentCode} | هاتف: ${studentPhone || 'غير مسجل'}. اضغط للتعيين وإرسال كلمة المرور عبر واتساب فوراً.`
+
       await (admin.from('notifications' as any) as any).insert({
         user_id: teacher.id,
         type: 'password_reset_request',
-        title: `طلب استعادة كلمة المرور: ${identifier}`,
-        body: `قام الحساب (${resolvedEmail}) بطلب إعادة تعيين كلمة المرور.`,
+        title,
+        body,
         channel: 'in_app',
+        link: `/ar/login-audit?search=${encodeURIComponent(studentCode)}`,
         metadata: {
-          identifier,
+          identifier: rawId,
+          studentCode,
+          studentName,
+          phone: studentPhone,
           resolvedEmail,
           requestedAt: new Date().toISOString(),
         },
       })
     }
 
-    // Also attempt Supabase native reset email if valid domain
+    // 3. Log audit event
+    const { recordLoginAuditAction } = await import('@/lib/audit/actions')
+    await recordLoginAuditAction({
+      identifier: rawId,
+      studentCode,
+      studentName,
+      method: 'password',
+      success: true,
+      failureReason: 'Password reset request submitted by student',
+    })
+
+    // 4. Also attempt Supabase native reset email if valid external domain
     if (!resolvedEmail.endsWith('@students.local')) {
       const { createClient } = await import('@/lib/supabase/server')
       const supabase = await createClient()
       await supabase.auth.resetPasswordForEmail(resolvedEmail)
     }
 
-    return { success: true, email: resolvedEmail }
+    return {
+      success: true,
+      email: resolvedEmail,
+      studentCode,
+      studentName,
+      phone: studentPhone,
+    }
   } catch (err) {
     return { error: String(err) }
   }

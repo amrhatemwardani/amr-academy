@@ -80,13 +80,13 @@ export function IDCardClientView({ locale, student, academyName }: Props) {
             <span>{isAr ? 'قلب البطاقة' : 'Flip Card'}</span>
           </button>
 
-          <button
-            onClick={() => setCertOpen(true)}
+          <Link
+            href={`/${locale}/portal/certificates`}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition-colors shadow-sm"
           >
             <Award className="h-3.5 w-3.5" />
-            <span>{isAr ? 'شهادة التقدير' : 'Certificate'}</span>
-          </button>
+            <span>{isAr ? 'شهادات التقدير' : 'Certificates'}</span>
+          </Link>
 
           <button
             onClick={handlePrint}

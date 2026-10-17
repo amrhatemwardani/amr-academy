@@ -2,6 +2,7 @@ import { requireTeacher } from '@/lib/auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
+import { TeacherMobileNav } from '@/components/layout/TeacherMobileNav'
 import { Toaster } from 'sonner'
 
 export default async function TeacherLayout({
@@ -23,7 +24,7 @@ export default async function TeacherLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Sidebar */}
+      {/* Sidebar — hidden on mobile, shown on large screens */}
       <Sidebar className="hidden lg:flex shrink-0" />
 
       {/* Main content area */}
@@ -33,12 +34,16 @@ export default async function TeacherLayout({
           role="teacher"
           unreadNotifications={unreadCount || 0}
         />
-        <main className="flex-1 overflow-y-auto scrollbar-thin">
+        {/* pb-16 gives space for the mobile bottom nav bar */}
+        <main className="flex-1 overflow-y-auto scrollbar-thin pb-16 lg:pb-0">
           <div className="container mx-auto max-w-7xl p-4 md:p-6">
             {children}
           </div>
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation (phones & tablets, hidden on lg+) */}
+      <TeacherMobileNav />
 
       {/* Toast notifications */}
       <Toaster

@@ -88,10 +88,16 @@ export function ChangePasswordForm({ locale, role, mustChangePassword }: ChangeP
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="locale" value={locale} />
 
-        {/* Current Password */}
+        {/* Current / Temporary Password */}
         <div className="space-y-1">
           <label htmlFor="currentPassword" className="text-xs font-bold text-gray-700">
-            {isAr ? 'كلمة المرور الحالية' : 'Current Password'}
+            {mustChangePassword
+              ? isAr
+                ? 'كلمة المرور المؤقتة (التي سلمها لك المعلم)'
+                : 'Temporary Password (given by your teacher)'
+              : isAr
+              ? 'كلمة المرور الحالية'
+              : 'Current Password'}
           </label>
           <div className="relative">
             <input

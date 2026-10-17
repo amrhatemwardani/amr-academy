@@ -4,6 +4,7 @@ import { ChangePasswordForm } from './change-password-form'
 import { getCurrentUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { signOutAndLoginAction } from './actions'
 
 export async function generateMetadata({
   params,
@@ -18,8 +19,10 @@ export async function generateMetadata({
 
 export default async function ChangePasswordPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>
+  searchParams?: Promise<{ [key: string]: string | undefined }>
 }) {
   const { locale } = await params
   const isAr = locale === 'ar'
@@ -35,7 +38,7 @@ export default async function ChangePasswordPage({
       dir={isAr ? 'rtl' : 'ltr'}
       style={{ backgroundColor: '#d8efe3' }}
     >
-      {/* ── Decorative Background Blobs (Sprout Style) ── */}
+      {/* ── Decorative Background Blobs ── */}
       <div
         className="pointer-events-none absolute -top-16 -right-16 w-72 h-72 rounded-full"
         style={{ backgroundColor: '#c2d2fd', opacity: 0.9 }}
@@ -49,12 +52,16 @@ export default async function ChangePasswordPage({
 
       {/* Back / Sign out button */}
       {user.mustChangePassword ? (
-        <form action="/auth/signout" method="post" className="absolute top-5 start-5 z-20">
+        // When forced, use server action to sign out properly
+        <form
+          action={signOutAndLoginAction.bind(null, locale)}
+          className="absolute top-5 start-5 z-20"
+        >
           <button
             type="submit"
             className="inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur-md px-4 py-2 text-xs font-bold text-gray-700 shadow-sm hover:bg-white transition-all hover:scale-105"
           >
-            <span>{isAr ? 'تسجيل الخروج' : 'Sign Out'}</span>
+            <span>{isAr ? '← تسجيل الخروج' : 'Sign Out →'}</span>
           </button>
         </form>
       ) : (

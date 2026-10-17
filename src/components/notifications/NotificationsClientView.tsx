@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
   Bell, CheckCheck, Trash2, Award, DollarSign, CalendarCheck,
-  MessageSquare, FileText, ExternalLink, Clock, AlertCircle, Info, Sparkles
+  MessageSquare, FileText, ExternalLink, Clock, AlertCircle, Info, Sparkles, KeyRound
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -43,6 +43,8 @@ function getNotificationIcon(type: string) {
       return { icon: CalendarCheck, color: 'text-blue-600 bg-blue-500/10' }
     case 'chat_message':
       return { icon: MessageSquare, color: 'text-purple-600 bg-purple-500/10' }
+    case 'password_reset_request':
+      return { icon: KeyRound, color: 'text-amber-600 bg-amber-500/10' }
     default:
       return { icon: Bell, color: 'text-primary bg-primary/10' }
   }
@@ -191,6 +193,18 @@ export function NotificationsClientView({ locale, role, notifications: initialIt
                           <p className="text-xs text-muted-foreground leading-relaxed">
                             {item.body}
                           </p>
+                        )}
+
+                        {item.type === 'password_reset_request' && (
+                          <div className="pt-2">
+                            <Link
+                              href={item.link || `/${locale}/login-audit`}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs transition-colors"
+                            >
+                              <KeyRound className="h-3.5 w-3.5" />
+                              <span>{isAr ? '🔑 تعيين كلمة المرور وإرسالها للواتساب' : 'Assign Password & WhatsApp'}</span>
+                            </Link>
+                          </div>
                         )}
 
                         <div className="flex items-center gap-3 pt-1 text-[11px] text-muted-foreground">

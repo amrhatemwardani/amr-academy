@@ -206,6 +206,14 @@ async function StudentDashboardContent({ locale }: { locale: string }) {
             </Link>
 
             <Link
+              href={`/${locale}/portal/certificates`}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-xs font-black text-white shadow-md transition-all hover:scale-105 active:scale-95"
+            >
+              <Award className="h-4 w-4 text-white" />
+              <span>{isAr ? 'شهادات التقدير 🎖️' : 'My Certificates 🎖️'}</span>
+            </Link>
+
+            <Link
               href={`/${locale}/portal/tasks`}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#0050e3] hover:bg-blue-700 text-xs font-black text-white shadow-md transition-all hover:scale-105 active:scale-95"
             >

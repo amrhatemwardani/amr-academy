@@ -280,12 +280,35 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Print styles
+   Print styles — High-Fidelity Exact Color Reproduction
 ═══════════════════════════════════════════════════════════════ */
 @media print {
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
   .no-print { display: none !important; }
-  .sidebar  { display: none !important; }
-  body { background: white !important; color: black !important; }
+  .sidebar, nav, header { display: none !important; }
+  
+  /* Suppress modal backdrops and portals during print */
+  [data-radix-portal] > div:first-child:not([role="dialog"]) {
+    display: none !important;
+  }
+  
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Full-bleed landscape certificate print */
+  .certificate-sheet {
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════

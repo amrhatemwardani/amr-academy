@@ -3,7 +3,7 @@
 import { useState, useRef, useTransition, useEffect } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { User, Phone, School, GraduationCap, KeyRound, CreditCard, ScanFace, Trash2, ShieldCheck, Smartphone } from 'lucide-react'
+import { User, Phone, School, GraduationCap, KeyRound, CreditCard, ScanFace, Trash2, ShieldCheck, Smartphone, Award } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { changeStudentPasswordAction } from './actions'
@@ -112,13 +112,23 @@ export function ProfileClientView({ locale, student }: Props) {
               </div>
             </div>
 
-            <Link
-              href={`/${locale}/portal/id-card`}
-              className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs shadow-sm hover:bg-primary/90 transition-colors shrink-0"
-            >
-              <CreditCard className="h-4 w-4" />
-              <span>{isAr ? 'كارنيه الطالب الذكي' : 'Digital Student ID'}</span>
-            </Link>
+            <div className="flex items-center gap-2 flex-wrap shrink-0">
+              <Link
+                href={`/${locale}/portal/id-card`}
+                className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-xs shadow-sm hover:bg-primary/90 transition-colors"
+              >
+                <CreditCard className="h-4 w-4" />
+                <span>{isAr ? 'كارنيه الطالب الذكي' : 'Digital Student ID'}</span>
+              </Link>
+
+              <Link
+                href={`/${locale}/portal/certificates`}
+                className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs shadow-sm transition-colors"
+              >
+                <Award className="h-4 w-4" />
+                <span>{isAr ? 'شهادات التقدير' : 'Certificates'}</span>
+              </Link>
+            </div>
           </div>
         </CardHeader>
 

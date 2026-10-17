@@ -42,7 +42,7 @@ export function AddStudentDialog({ classes, onSuccess }: AddStudentDialogProps) 
   const [email, setEmail] = useState('')
   const [selectedClassIds, setSelectedClassIds] = useState<string[]>([])
   const [password, setPassword] = useState('Student@123456')
-  const [mustChangePassword, setMustChangePassword] = useState(false)
+  const [mustChangePassword, setMustChangePassword] = useState(true)
 
   // Success state
   const [createdStudent, setCreatedStudent] = useState<{
@@ -65,7 +65,7 @@ export function AddStudentDialog({ classes, onSuccess }: AddStudentDialogProps) 
     setEmail('')
     setSelectedClassIds([])
     setPassword('Student@123456')
-    setMustChangePassword(false)
+    setMustChangePassword(true)
     setError(null)
     setCreatedStudent(null)
     setCopied(false)

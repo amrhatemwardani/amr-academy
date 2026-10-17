@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
@@ -61,7 +60,7 @@ export async function changePasswordAction(
     }
   }
 
-  // 1. Verify current password
+  // 1. Verify the current (temporary) password by re-authenticating
   const { error: signInErr } = await supabase.auth.signInWithPassword({
     email: user.email,
     password: currentPassword,
@@ -70,12 +69,12 @@ export async function changePasswordAction(
   if (signInErr) {
     return {
       error: isAr
-        ? 'كلمة المرور الحالية غير صحيحة.'
-        : 'Current password is incorrect.',
+        ? 'كلمة المرور الحالية غير صحيحة. اكتب كلمة المرور المؤقتة التي سلمها لك المعلم.'
+        : 'Current password is incorrect. Enter the temporary password given by your teacher.',
     }
   }
 
-  // 2. Update to new password
+  // 2. Update to the new password using admin client (bypasses RLS, no session conflicts)
   const admin = createAdminClient()
   const { error: updateErr } = await admin.auth.admin.updateUserById(user.id, {
     password: newPassword,
@@ -83,25 +82,36 @@ export async function changePasswordAction(
 
   if (updateErr) {
     return {
-      error: updateErr.message,
+      error: isAr
+        ? `فشل تحديث كلمة المرور: ${updateErr.message}`
+        : `Failed to update password: ${updateErr.message}`,
     }
   }
 
-  // 3. Clear must_change_password flag
-  await (admin.from('profiles' as any) as any)
+  // 3. Clear the must_change_password flag so student isn't stuck in the loop
+  const { error: profileErr } = await (admin.from('profiles' as any) as any)
     .update({ must_change_password: false })
     .eq('id', user.id)
 
-  // 4. Determine redirect path
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single() as { data: { role: string } | null }
+  if (profileErr) {
+    // Log but do not fail — the password was already updated
+    console.error('Failed to clear must_change_password flag:', profileErr)
+  }
 
-  const targetPath = profile?.role === 'teacher' ? `/${locale}/dashboard` : `/${locale}/portal`
+  // 4. Sign out the old session so a fresh login is forced with the new password.
+  //    This prevents stale session tokens from keeping the old password context.
+  await supabase.auth.signOut()
 
-  revalidatePath(targetPath)
-  revalidatePath(`/${locale}/change-password`)
-  redirect(targetPath)
+  // 5. Redirect to login with a success flag so we can show a toast
+  redirect(`/${locale}/login?passwordChanged=1`)
+}
+
+/**
+ * Signs the user out completely — used in the forced change-password page
+ * so the student can bail out and go back to the login screen.
+ */
+export async function signOutAndLoginAction(locale: string) {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  redirect(`/${locale}/login`)
 }

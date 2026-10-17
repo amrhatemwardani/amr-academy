@@ -56,8 +56,8 @@ export function LoginAuditClientView({
   const isAr = locale === 'ar'
 
   const [activeTab, setActiveTab] = useState<'credentials' | 'audit'>('credentials')
-  const [students, setStudents] = useState<StudentCredentialItem[]>(initialStudents)
-  const [audits, setAudits] = useState<LoginAuditItem[]>(initialAudits)
+  const [students, setStudents] = useState<StudentCredentialItem[]>(initialStudents || [])
+  const [audits, setAudits] = useState<LoginAuditItem[]>(initialAudits || [])
   const [refreshingAudits, setRefreshingAudits] = useState(false)
 
   // Search & Filter
@@ -86,7 +86,13 @@ export function LoginAuditClientView({
   const pendingPasswordChangeCount = students.filter((s) => s.mustChangePassword).length
   const faceIdEnrolledCount = students.filter((s) => s.hasFaceId).length
   const successfulLoginsCount = audits.filter((a) => a.success).length
-  const failedLoginsCount = audits.filter((a) => !a.success).length
+  const pendingResetRequests = useMemo(() => {
+    return audits.filter(
+      (a) =>
+        a.action === 'auth.password_reset.requested' ||
+        a.failureReason?.includes('Password reset request')
+    )
+  }, [audits])
 
   // Filtered Students
   const filteredStudents = useMemo(() => {
@@ -379,6 +385,53 @@ export function LoginAuditClientView({
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Pending Reset Requests Urgent Alert ─────────────────────────────── */}
+      {pendingResetRequests.length > 0 && (
+        <div className="rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border-2 border-amber-400/50 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm font-black">
+              <KeyRound className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-foreground flex items-center gap-2">
+                <span>{isAr ? 'يوجد طلبات استعادة كلمة مرور معلقة من الطلاب!' : 'Pending Password Reset Requests!'}</span>
+                <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {pendingResetRequests.length} {isAr ? 'طلب جديد' : 'requests'}
+                </span>
+              </h4>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {isAr
+                  ? `آخر طلب من: ${pendingResetRequests[0].studentName || pendingResetRequests[0].studentCode || pendingResetRequests[0].identifier}. اضغط لتعيين كلمة مرور مؤقتة وإرسالها فوراً عبر واتساب.`
+                  : `Latest request from: ${pendingResetRequests[0].studentName || pendingResetRequests[0].studentCode || pendingResetRequests[0].identifier}. Click to assign password & WhatsApp.`}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              const req = pendingResetRequests[0]
+              const targetCode = req.studentCode || req.identifier
+              const matched = students.find(
+                (s) => s.studentCode === targetCode || s.email.toLowerCase() === targetCode.toLowerCase()
+              )
+              if (matched) {
+                setSelectedStudent(matched)
+                setNewPassword('Student@123456')
+                setRequireChangeOnLogin(true)
+                setResetDialogOpen(true)
+              } else {
+                setSearch(targetCode)
+              }
+            }}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-sm transition-all shrink-0"
+          >
+            <KeyRound className="h-4 w-4" />
+            <span>{isAr ? 'تعيين كلمة المرور وإرسال للواتساب ⚡' : 'Assign Password & WhatsApp ⚡'}</span>
+          </button>
+        </div>
+      )}
 
       {/* ── Search & Filter Bar ─────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card border rounded-2xl p-3.5 shadow-xs">

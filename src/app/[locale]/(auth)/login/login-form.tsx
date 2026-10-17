@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, Loader2, HelpCircle, CheckCircle2, MessageSquare, KeyRound, X, ScanFace } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { resolveLoginIdentifierAction, requestPasswordResetAction } from './actions'
 import { FaceIdLoginModal } from '@/components/auth/FaceIdLoginModal'
 import { recordLoginAuditAction } from '@/lib/audit/actions'
+import { toast } from 'sonner'
 
 interface Props {
   locale: string
@@ -35,6 +36,25 @@ export function LoginForm({ locale }: Props) {
   const [forgotLoading, setForgotLoading] = useState(false)
   const [forgotSuccess, setForgotSuccess] = useState<string | null>(null)
   const [forgotError, setForgotError] = useState<string | null>(null)
+
+  // Show toasts based on URL params (e.g. after forced password change)
+  useEffect(() => {
+    if (searchParams.get('passwordChanged') === '1') {
+      toast.success(
+        isAr
+          ? '✅ تم تحديث كلمة المرور بنجاح! سجّل دخولك بكلمة مرورك الجديدة.'
+          : '✅ Password updated! Please sign in with your new password.'
+      )
+    }
+    if (searchParams.get('error') === 'blocked') {
+      toast.error(
+        isAr
+          ? 'حسابك غير مفعّل. تواصل مع إدارة الأكاديمية.'
+          : 'Your account is inactive. Contact the academy administration.'
+      )
+    }
+  }, []) // Run once on mount
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
