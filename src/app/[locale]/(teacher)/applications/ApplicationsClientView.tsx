@@ -27,9 +27,19 @@ interface Props {
 }
 
 const GRADE_LABELS: Record<string, { ar: string; en: string }> = {
+  grade_8: { ar: 'الصف الثاني الإعدادي (Grade 8)', en: 'Grade 8 (Prep 2)' },
+  grade_9: { ar: 'الصف الثالث الإعدادي (Grade 9)', en: 'Grade 9 (Prep 3)' },
+  grade_10: { ar: 'الصف الأول الثانوي (Grade 10)', en: 'Grade 10 (Sec 1)' },
+  grade_11: { ar: 'الصف الثاني الثانوي (Grade 11)', en: 'Grade 11 (Sec 2)' },
+  grade_12: { ar: 'الصف الثالث الثانوي (Grade 12)', en: 'Grade 12 (Thanaweya)' },
   sec1: { ar: 'الصف الأول الثانوي', en: '1st Secondary (Sec 1)' },
   sec2: { ar: 'الصف الثاني الثانوي', en: '2nd Secondary (Sec 2)' },
   sec3: { ar: 'الصف الثالث الثانوي (ثانوية عامة)', en: '3rd Secondary (Thanaweya)' },
+}
+
+const LANGUAGE_LABELS: Record<string, { ar: string; en: string }> = {
+  arabic: { ar: 'عربي (عام)', en: 'Arabic' },
+  english: { ar: 'لغات / English', en: 'English (Languages)' },
 }
 
 const SUBJECT_LABELS: Record<string, { ar: string; en: string }> = {
@@ -189,9 +199,14 @@ export function ApplicationsClientView({ locale, applications }: Props) {
             className="rounded-xl border border-gray-200 bg-[#fcf6f3] px-3 py-2 text-xs sm:text-sm font-semibold outline-none focus:border-[#f6b407]"
           >
             <option value="all">{isAr ? 'جميع المراحل' : 'All Grades'}</option>
-            <option value="sec1">{isAr ? 'الصف الأول الثانوي' : 'Sec 1'}</option>
-            <option value="sec2">{isAr ? 'الصف الثاني الثانوي' : 'Sec 2'}</option>
-            <option value="sec3">{isAr ? 'الصف الثالث الثانوي' : 'Sec 3'}</option>
+            <option value="grade_8">{isAr ? 'الصف الثاني الإعدادي (Grade 8)' : 'Grade 8 (Prep 2)'}</option>
+            <option value="grade_9">{isAr ? 'الصف الثالث الإعدادي (Grade 9)' : 'Grade 9 (Prep 3)'}</option>
+            <option value="grade_10">{isAr ? 'الصف الأول الثانوي (Grade 10)' : 'Grade 10 (Sec 1)'}</option>
+            <option value="grade_11">{isAr ? 'الصف الثاني الثانوي (Grade 11)' : 'Grade 11 (Sec 2)'}</option>
+            <option value="grade_12">{isAr ? 'الصف الثالث الثانوي (Grade 12)' : 'Grade 12 (Sec 3)'}</option>
+            <option value="sec1">{isAr ? 'الصف الأول الثانوي (قديم)' : 'Sec 1 (legacy)'}</option>
+            <option value="sec2">{isAr ? 'الصف الثاني الثانوي (قديم)' : 'Sec 2 (legacy)'}</option>
+            <option value="sec3">{isAr ? 'الصف الثالث الثانوي (قديم)' : 'Sec 3 (legacy)'}</option>
           </select>
         </div>
 
@@ -242,10 +257,15 @@ export function ApplicationsClientView({ locale, applications }: Props) {
         <div className="space-y-4">
           {filtered.map((app) => {
             const statusConf = STATUS_CONFIG[app.status] || STATUS_CONFIG.pending
-            const waStudentUrl = `https://wa.me/20${app.studentPhone.replace(/^0+/, '')}?text=${encodeURIComponent(
+            const studentDial = (app.countryCode || '+20').replace(/\D/g, '')
+            const parentDial = (app.parentCountryCode || app.countryCode || '+20').replace(/\D/g, '')
+            const studentCleanNum = app.studentPhone.replace(/^0+/, '')
+            const parentCleanNum = app.parentPhone.replace(/^0+/, '')
+
+            const waStudentUrl = `https://wa.me/${studentDial}${studentCleanNum}?text=${encodeURIComponent(
               `مرحباً يا ${app.studentName}، معك م. عمرو حاتم بخصوص طلب التحاقك بالأكاديمية (كود: ${app.code}).`
             )}`
-            const waParentUrl = `https://wa.me/20${app.parentPhone.replace(/^0+/, '')}?text=${encodeURIComponent(
+            const waParentUrl = `https://wa.me/${parentDial}${parentCleanNum}?text=${encodeURIComponent(
               `السلام عليكم ورحمة الله، مع حضراتكم إدارة أكاديمية م. عمرو حاتم بخصوص طلب انضمام الطالب (${app.studentName}) - كود الحجز: ${app.code}.`
             )}`
 
@@ -278,6 +298,16 @@ export function ApplicationsClientView({ locale, applications }: Props) {
                     <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold bg-gray-100 text-gray-700">
                       {MODE_LABELS[app.mode]?.[isAr ? 'ar' : 'en'] || app.mode}
                     </span>
+                    {app.country && (
+                      <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                        🌍 {app.country}
+                      </span>
+                    )}
+                    {app.studyLanguage && (
+                      <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
+                        📖 {LANGUAGE_LABELS[app.studyLanguage]?.[isAr ? 'ar' : 'en'] || app.studyLanguage}
+                      </span>
+                    )}
                   </div>
 
                   {/* Student Name */}
@@ -309,7 +339,10 @@ export function ApplicationsClientView({ locale, applications }: Props) {
                         className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 px-3 py-1.5 text-xs font-black shadow-2xs transition-colors"
                       >
                         <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
-                        <span>واتساب الطالب: <span dir="ltr">{app.studentPhone}</span></span>
+                        <span>
+                          {isAr ? 'واتساب الطالب:' : 'Student WhatsApp:'}{' '}
+                          <span dir="ltr">{app.countryCode ? `${app.countryCode} ` : ''}{app.studentPhone}</span>
+                        </span>
                       </a>
                     )}
 
@@ -321,7 +354,10 @@ export function ApplicationsClientView({ locale, applications }: Props) {
                         className="inline-flex items-center gap-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-300 px-3 py-1.5 text-xs font-black shadow-2xs transition-colors"
                       >
                         <Phone className="h-3.5 w-3.5 text-[#0050e3]" />
-                        <span>ولي الأمر: <span dir="ltr">{app.parentPhone}</span></span>
+                        <span>
+                          {isAr ? 'ولي الأمر:' : 'Parent Phone:'}{' '}
+                          <span dir="ltr">{app.parentCountryCode || app.countryCode ? `${app.parentCountryCode || app.countryCode} ` : ''}{app.parentPhone}</span>
+                        </span>
                       </a>
                     )}
                   </div>

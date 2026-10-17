@@ -13,6 +13,10 @@ export interface ApplicationItem {
   mode: string
   studentPhone: string
   parentPhone: string
+  country?: string
+  countryCode?: string
+  parentCountryCode?: string
+  studyLanguage?: string
   governorate?: string
   notes?: string
   status: 'pending' | 'contacted' | 'enrolled' | 'rejected'
@@ -27,6 +31,10 @@ export interface SubmitApplicationInput {
   mode: string
   studentPhone: string
   parentPhone: string
+  country?: string
+  countryCode?: string
+  parentCountryCode?: string
+  studyLanguage?: string
   governorate?: string
   notes?: string
 }
@@ -62,6 +70,10 @@ export async function submitApplicationAction(data: SubmitApplicationInput) {
           mode: data.mode,
           studentPhone: data.studentPhone.trim(),
           parentPhone: data.parentPhone.trim(),
+          country: data.country || 'Egypt',
+          countryCode: data.countryCode || '+20',
+          parentCountryCode: data.parentCountryCode || '+20',
+          studyLanguage: data.studyLanguage || 'arabic',
           governorate: data.governorate?.trim() || '',
           notes: data.notes?.trim() || '',
           status: 'pending',
@@ -99,11 +111,15 @@ export async function getApplicationsAction(): Promise<ApplicationItem[]> {
         id: item.id,
         code: meta.code || 'AMR-000000',
         studentName: meta.studentName || item.title || 'طالب جديد',
-        grade: meta.grade || 'sec3',
+        grade: meta.grade || 'grade_12',
         subject: meta.subject || 'physics',
         mode: meta.mode || 'center',
         studentPhone: meta.studentPhone || '',
         parentPhone: meta.parentPhone || '',
+        country: meta.country || 'Egypt',
+        countryCode: meta.countryCode || '+20',
+        parentCountryCode: meta.parentCountryCode || '+20',
+        studyLanguage: meta.studyLanguage || 'arabic',
         governorate: meta.governorate || '',
         notes: meta.notes || '',
         status: meta.status || 'pending',

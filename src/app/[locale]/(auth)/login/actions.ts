@@ -1,188 +1,115 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { z } from 'zod'
-
-const teacherLoginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
-})
-
-const studentLoginSchema = z.object({
-  identifier: z.string().min(1, 'Student code or phone is required'),
-  password: z.string().min(1, 'Password is required'),
-})
-
-export type LoginState = {
-  error?: string
-  fieldErrors?: Record<string, string[]>
-}
-
-type StudentCodeRow = { student_code: string }
-type ProfileRoleRow = { role: 'teacher' | 'student' }
-type ProfileRolePwRow = { role: 'teacher' | 'student'; must_change_password: boolean }
+import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
- * Teacher login — uses real email + password
+ * Resolves a student code, phone number, or email into the exact email
+ * registered in Supabase Auth.
+ * Examples:
+ * - 'S1036' -> 's1036@students.local'
+ * - 's1036' -> 's1036@students.local'
+ * - '1036'  -> 's1036@students.local'
+ * - '01012345678' -> queries student table for student_code -> 's...courses@students.local'
+ * - 'user@example.com' -> 'user@example.com'
  */
-export async function teacherLogin(
-  _prev: LoginState,
-  formData: FormData
-): Promise<LoginState> {
-  const parsed = teacherLoginSchema.safeParse({
-    email: formData.get('email'),
-    password: formData.get('password'),
-  })
+export async function resolveLoginIdentifierAction(rawIdentifier: string): Promise<string> {
+  const trimmed = rawIdentifier.trim()
+  if (!trimmed) return ''
 
-  if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors }
+  // 1. If it's already an email, return as-is
+  if (trimmed.includes('@')) {
+    return trimmed.toLowerCase()
   }
 
-  const supabase = await createClient()
+  // 2. If it's a student code format (e.g. S1036, s1036, 1036, S20260012)
+  if (/^s?\d+$/i.test(trimmed)) {
+    const numPart = trimmed.replace(/^s/i, '')
+    const syntheticEmail = `s${numPart.toLowerCase()}@students.local`
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email,
-    password: parsed.data.password,
-  })
-
-  if (error) {
-    return { error: 'Invalid email or password. Please try again.' }
-  }
-
-  // Verify role
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) return { error: 'Authentication failed.' }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single() as { data: ProfileRoleRow | null; error: unknown }
-
-  if (!profile || profile.role !== 'teacher') {
-    await supabase.auth.signOut()
-    return { error: 'This account is not a teacher account.' }
-  }
-
-  const locale = (formData.get('locale') as string) || 'en'
-  revalidatePath(`/${locale}/dashboard`)
-  redirect(`/${locale}/dashboard`)
-}
-
-/**
- * Student login — identifier is student_code (e.g. S1001) or phone number.
- * Maps to synthetic email: {student_code}@students.local
- */
-export async function studentLogin(
-  _prev: LoginState,
-  formData: FormData
-): Promise<LoginState> {
-  const parsed = studentLoginSchema.safeParse({
-    identifier: formData.get('identifier'),
-    password: formData.get('password'),
-  })
-
-  if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors }
-  }
-
-  const supabase = await createClient()
-  const identifier = parsed.data.identifier.trim()
-  const locale = (formData.get('locale') as string) || 'en'
-
-  // Determine if identifier is a student code (starts with S and digits) or phone
-  let email: string
-
-  if (/^S\d+$/i.test(identifier)) {
-    // Student code
-    email = `${identifier.toUpperCase()}@students.local`
-  } else {
-    // Phone number — look up the student_code
-    const { data: student } = await supabase
-      .from('students')
-      .select('student_code')
-      .eq('phone', identifier)
-      .single() as { data: StudentCodeRow | null; error: unknown }
-
-    if (!student) {
-      return { error: 'No account found with this phone number.' }
+    // Verify if this auth user exists
+    const admin = createAdminClient()
+    const { data: { users } } = await admin.auth.admin.listUsers({ perPage: 100 })
+    const matched = users.find(
+      (u) => (u.email || '').toLowerCase() === syntheticEmail
+    )
+    if (matched && matched.email) {
+      return matched.email
     }
-    email = `${student.student_code}@students.local`
   }
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password: parsed.data.password,
-  })
+  // 3. Query students table by student_code (case-insensitive) or by phone
+  try {
+    const admin = createAdminClient()
+    const cleanPhone = trimmed.replace(/[\s\-\+]/g, '')
 
-  if (error) {
-    const isBanned =
-      error.message?.toLowerCase().includes('banned') ||
-      error.message?.toLowerCase().includes('disabled') ||
-      error.message?.toLowerCase().includes('suspended')
-    if (isBanned) {
-      return {
-        error:
-          locale === 'ar'
-            ? 'تم حظر / تعليق حسابك. يرجى التواصل مع إدارة الأكاديمية أو المعلم لإعادة تفعيل الحساب.'
-            : 'Your account has been suspended/blocked. Please contact the manager or your teacher to reactivate your account.',
+    const { data: student } = await (admin.from('students' as any) as any)
+      .select('id, student_code, phone, email')
+      .or(`student_code.ilike.${trimmed},phone.ilike.%${cleanPhone}%,parent_phone.ilike.%${cleanPhone}%`)
+      .limit(1)
+      .single()
+
+    if (student) {
+      if (student.email && student.email.includes('@')) {
+        return student.email.toLowerCase()
+      }
+      if (student.student_code) {
+        return `${student.student_code.toLowerCase()}@students.local`
       }
     }
-    return { error: 'Invalid credentials. Please check your code/phone and password.' }
+  } catch (err) {
+    console.error('Error resolving student identifier:', err)
   }
 
-  // Verify role
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) return { error: 'Authentication failed.' }
-
-  // Check student active status
-  const { data: studentRecord } = await (supabase.from('students' as any) as any)
-    .select('status')
-    .eq('id', user.id)
-    .single()
-
-  if (studentRecord && (studentRecord.status === 'inactive' || studentRecord.status === 'archived')) {
-    await supabase.auth.signOut()
-    return {
-      error:
-        locale === 'ar'
-          ? 'تم حظر / تعليق حسابك. يرجى التواصل مع إدارة الأكاديمية أو المعلم لإعادة تفعيل الحساب.'
-          : 'Your account has been suspended/blocked. Please contact the manager or your teacher to reactivate your account.',
-    }
+  // 4. Default fallback: if alphanumeric without @, try appending @students.local
+  if (!trimmed.includes('@')) {
+    return `${trimmed.toLowerCase()}@students.local`
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, must_change_password')
-    .eq('id', user.id)
-    .single() as { data: ProfileRolePwRow | null; error: unknown }
-
-  if (!profile || profile.role !== 'student') {
-    await supabase.auth.signOut()
-    return { error: 'This account is not a student account.' }
-  }
-
-  if (profile.must_change_password) {
-    redirect(`/${locale}/change-password`)
-  }
-
-  revalidatePath(`/${locale}/portal`)
-  redirect(`/${locale}/portal`)
+  return trimmed.toLowerCase()
 }
 
 /**
- * Logout action
+ * In-app password reset request
  */
-export async function logout(locale = 'en') {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
-  redirect(`/${locale}/login`)
+export async function requestPasswordResetAction(identifier: string) {
+  try {
+    const resolvedEmail = await resolveLoginIdentifierAction(identifier)
+    if (!resolvedEmail) {
+      return { error: 'Please enter a valid student code or email.' }
+    }
+
+    const admin = createAdminClient()
+    // Find teacher to notify
+    const { data: teacher } = await (admin.from('profiles' as any) as any)
+      .select('id')
+      .eq('role', 'teacher')
+      .limit(1)
+      .single()
+
+    if (teacher?.id) {
+      await (admin.from('notifications' as any) as any).insert({
+        user_id: teacher.id,
+        type: 'password_reset_request',
+        title: `طلب استعادة كلمة المرور: ${identifier}`,
+        body: `قام الحساب (${resolvedEmail}) بطلب إعادة تعيين كلمة المرور.`,
+        channel: 'in_app',
+        metadata: {
+          identifier,
+          resolvedEmail,
+          requestedAt: new Date().toISOString(),
+        },
+      })
+    }
+
+    // Also attempt Supabase native reset email if valid domain
+    if (!resolvedEmail.endsWith('@students.local')) {
+      const { createClient } = await import('@/lib/supabase/server')
+      const supabase = await createClient()
+      await supabase.auth.resetPasswordForEmail(resolvedEmail)
+    }
+
+    return { success: true, email: resolvedEmail }
+  } catch (err) {
+    return { error: String(err) }
+  }
 }
