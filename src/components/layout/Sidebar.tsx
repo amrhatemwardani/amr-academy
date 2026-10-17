@@ -84,7 +84,7 @@ export function Sidebar({ className }: SidebarProps) {
     >
       {/* Logo / Brand */}
       <Link
-        href={`/${locale}/dashboard`}
+        href={`/${locale}`}
         className={cn(
           'flex items-center gap-3 px-4 py-4 border-b border-sidebar-border transition-colors hover:bg-sidebar-accent/50',
           collapsed && 'justify-center px-2'
@@ -139,6 +139,21 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* Collapse toggle and Logout */}
       <div className="border-t border-sidebar-border p-2 space-y-1">
+        {/* Link to public website */}
+        <Link
+          href={`/${locale}`}
+          className={cn(
+            'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-sidebar-foreground/70',
+            'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-150',
+            collapsed && 'justify-center px-2'
+          )}
+          title={locale === 'ar' ? 'الموقع العام' : 'Public Website'}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          {!collapsed && <span>{locale === 'ar' ? 'الموقع العام' : 'Home'}</span>}
+        </Link>
         <LogoutButton showText={!collapsed} collapsed={collapsed} />
         <button
           onClick={toggleCollapsed}

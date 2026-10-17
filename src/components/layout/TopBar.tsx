@@ -50,7 +50,7 @@ export function TopBar({
       {/* Brand logo (visible on mobile, and always in student portal) */}
       <div className={role === 'student' ? 'flex items-center gap-2.5' : 'flex lg:hidden items-center gap-2.5'}>
         <Link
-          href={role === 'teacher' ? `/${locale}/dashboard` : `/${locale}/portal`}
+          href={`/${locale}`}
           className="flex items-center gap-2 hover:opacity-90 transition-opacity"
         >
           <Image
