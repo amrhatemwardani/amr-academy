@@ -1,10 +1,10 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { LoginForm } from './login-form'
 import { getCurrentUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import { SproutIllustration } from '@/components/public/SproutIllustration'
 
 export async function generateMetadata({
   params,
@@ -32,118 +32,123 @@ export default async function LoginPage({
 
   return (
     <main
-      className="min-h-screen relative flex items-center justify-center overflow-hidden"
+      className="min-h-screen w-full relative flex items-center justify-center p-4 sm:p-6 overflow-hidden"
       dir={isAr ? 'rtl' : 'ltr'}
-      style={{ background: 'linear-gradient(135deg, #e8f7ec 0%, #d4f0e0 50%, #e0f0fb 100%)' }}
+      style={{ backgroundColor: '#d8efe3' }}
     >
-      {/* Decorative blobs — exactly like Sprout screenshot */}
-      {/* Top-right lavender blob */}
+      {/* ── Decorative Background Blobs (Exactly from reference image) ── */}
+      {/* Top-Right Periwinkle / Lavender Blob */}
       <div
-        className="pointer-events-none absolute top-[-60px] right-[-60px] h-52 w-52 rounded-full opacity-70"
-        style={{ background: '#c7d2fe' }}
-      />
-      {/* Bottom-left yellow blob */}
-      <div
-        className="pointer-events-none absolute bottom-[-60px] left-[-60px] h-48 w-48 rounded-full opacity-80"
-        style={{ background: '#fde68a' }}
-      />
-      {/* Extra mint blob mid-left */}
-      <div
-        className="pointer-events-none absolute top-1/2 left-[-30px] h-28 w-28 rounded-full opacity-40"
-        style={{ background: '#6ee7b7' }}
+        className="pointer-events-none absolute -top-16 -right-16 sm:-top-20 sm:-right-20 w-72 h-72 sm:w-96 sm:h-96 rounded-full"
+        style={{ backgroundColor: '#c2d2fd', opacity: 0.9 }}
+        aria-hidden="true"
       />
 
-      {/* The Main Card — split left/right */}
+      {/* Bottom-Left Yellow Blob */}
       <div
-        className="relative z-10 flex w-full max-w-2xl mx-4 rounded-3xl overflow-hidden shadow-2xl"
-        style={{ minHeight: '460px' }}
+        className="pointer-events-none absolute -bottom-16 -left-16 sm:-bottom-20 sm:-left-20 w-64 h-64 sm:w-80 sm:h-80 rounded-full"
+        style={{ backgroundColor: '#fed876', opacity: 0.95 }}
+        aria-hidden="true"
+      />
+
+      {/* Back to Home pill (Top Corner) */}
+      <Link
+        href={`/${locale}`}
+        className="absolute top-5 start-5 z-20 inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur-md px-3.5 py-1.5 text-xs font-bold text-gray-700 shadow-sm hover:bg-white transition-all hover:scale-105"
       >
-        {/* LEFT PANEL — Illustration (peach background) */}
+        <span>{isAr ? '→ العودة للرئيسية' : '← Back to Home'}</span>
+      </Link>
+
+      {/* ── Center Sprout Card (Split 50% / 50%) ── */}
+      <div
+        className="relative z-10 w-full max-w-[820px] rounded-[32px] sm:rounded-[36px] overflow-hidden shadow-2xl bg-white border border-white/60 flex flex-col md:flex-row"
+        style={{ boxShadow: '0 25px 60px -15px rgba(20, 80, 50, 0.12)' }}
+      >
+        {/* LEFT PANEL — Vector Illustration & Peach Background */}
         <div
-          className="hidden sm:flex w-2/5 flex-col items-center justify-between py-8 px-6 relative"
-          style={{ background: '#fde5d9' }}
+          className="w-full md:w-1/2 flex flex-col items-center justify-between p-7 sm:p-10 relative select-none"
+          style={{ backgroundColor: '#fce5d8' }}
         >
-          {/* Big emoji illustration representing Physics */}
-          <div className="flex flex-col items-center justify-center flex-1 gap-4">
-            {/* Sun */}
-            <div className="absolute top-8 right-8 text-3xl animate-bounce-apple">☀️</div>
-            {/* Cloud */}
-            <div className="absolute top-6 left-6 text-2xl">☁️</div>
-
-            {/* Main Physics Character */}
-            <div className="text-[80px] leading-none select-none drop-shadow-lg mt-4">
-              🧪
-            </div>
-            <div className="text-4xl leading-none select-none">⚛️</div>
-
-            {/* Sparkles */}
-            <div className="absolute top-1/3 left-5 text-pink-400 text-lg">✦</div>
-            <div className="absolute top-1/2 right-5 text-pink-400 text-sm">✦</div>
+          {/* Top spacer */}
+          <div className="w-full flex justify-start">
+            <span className="text-[11px] font-bold text-[#eb6744]/80 tracking-wider uppercase">
+              {isAr ? 'أكاديمية الفيزياء والرياضيات' : 'Physics & Math Academy'}
+            </span>
           </div>
 
-          {/* Stat Badge at bottom */}
-          <div
-            className="rounded-full px-4 py-2 text-xs font-bold text-gray-700 shadow-sm"
-            style={{ background: 'rgba(255,255,255,0.75)' }}
-          >
-            {isAr ? '🎓 مئات الطلاب يدرسون معنا' : '🎓 Hundreds of students learning daily'}
+          {/* Central Cute Vector Illustration */}
+          <div className="my-auto py-4 w-full flex items-center justify-center">
+            <SproutIllustration className="w-full max-w-[270px] h-auto drop-shadow-sm" />
+          </div>
+
+          {/* Bottom Badge (Exact match to Sprout reference) */}
+          <div className="w-full flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/95 backdrop-blur-sm px-5 py-2 text-xs font-bold text-[#1f6f47] shadow-sm border border-emerald-50">
+              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>
+                {isAr
+                  ? '412+ طالباً أنجزوا تدريباتهم في الموعد اليوم'
+                  : '412 students completed tasks on time today'}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* RIGHT PANEL — Form (pure white) */}
-        <div className="flex-1 bg-white py-8 px-7 sm:px-9 flex flex-col justify-center">
-          {/* Logo */}
-          <Link href={`/${locale}`} className="inline-block mb-5 hover:opacity-80 transition-opacity">
-            <Image
-              src="/logo.svg"
-              alt="Amr Academy"
-              width={130}
-              height={36}
-              priority
-              className="h-8 w-auto object-contain"
-            />
-          </Link>
+        {/* RIGHT PANEL — Sign In Form (White Background) */}
+        <div className="w-full md:w-1/2 bg-white p-7 sm:p-10 flex flex-col justify-center">
+          {/* Brand Logo Row */}
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-4 h-4 rounded-sm rotate-45 bg-[#2c8c5c] shadow-xs" />
+            <span className="font-extrabold text-base tracking-tight text-[#1b4332]">
+              {isAr ? 'أكاديمية عمرو حاتم' : 'Amr Academy'}
+            </span>
+          </div>
 
-          {/* Warm greeting */}
-          <h1 className="text-2xl font-black text-gray-900 mb-1 leading-tight">
-            {isAr ? 'أهلاً بعودتك! 👋' : 'Hello again! 👋'}
+          {/* Main Welcome Heading */}
+          <h1 className="text-2xl sm:text-[26px] font-black text-gray-900 leading-tight">
+            {isAr ? 'أهلاً بك يا بطل! 👋' : 'Hello again, plant pal!'}
           </h1>
-          <p className="text-sm text-gray-400 mb-6">
-            {isAr ? 'سعداء برؤيتك مجدداً.' : 'Great to see you back.'}
+          <p className="text-xs sm:text-sm text-gray-400 mt-1 mb-6">
+            {isAr
+              ? 'دروسك وتمارين الفيزياء بانتظارك اليوم.'
+              : 'Your courses and lessons have been asking about you.'}
           </p>
 
-          <Suspense fallback={<div className="h-48 animate-pulse rounded-2xl bg-gray-100" />}>
+          {/* Form */}
+          <Suspense fallback={<div className="h-44 animate-pulse rounded-2xl bg-gray-100" />}>
             <LoginForm locale={locale} />
           </Suspense>
 
-          {/* Apply link */}
-          <p className="mt-5 text-center text-xs text-gray-400">
+          {/* New Account / Apply Link */}
+          <div className="mt-6 text-center text-xs text-gray-500">
             {isAr ? (
               <>
                 طالب جديد؟{' '}
-                <Link href={`/${locale}/apply`} className="font-bold text-[#0050e3] hover:underline">
-                  تقديم طلب انضمام
+                <Link
+                  href={`/${locale}/apply`}
+                  className="font-bold text-[#2563eb] hover:underline"
+                >
+                  سجّل حسابك في الأكاديمية
                 </Link>
               </>
             ) : (
               <>
-                New here?{' '}
-                <Link href={`/${locale}/apply`} className="font-bold text-[#0050e3] hover:underline">
-                  Apply to join
+                First time here?{' '}
+                <Link
+                  href={`/${locale}/apply`}
+                  className="font-bold text-[#2563eb] hover:underline"
+                >
+                  Plant your account
                 </Link>
               </>
             )}
+          </div>
+
+          <p className="mt-2 text-center text-[11px] text-gray-400">
+            {isAr ? 'منصة م. عمرو حاتم — دليلك لأعلى الدرجات' : 'Amr Hatem Academy — Learn with confidence'}
           </p>
         </div>
       </div>
-
-      {/* Top-left home link */}
-      <Link
-        href={`/${locale}`}
-        className="absolute top-5 left-5 z-20 text-xs text-gray-500 hover:text-gray-700 bg-white/60 backdrop-blur rounded-full px-3 py-1.5 transition-colors"
-      >
-        ← {isAr ? 'الرئيسية' : 'Home'}
-      </Link>
     </main>
   )
 }

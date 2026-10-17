@@ -20,6 +20,8 @@ interface ExistingQuestion {
   explanation?: string
   default_marks: number
   subject?: string
+  unit?: string | null
+  lesson?: string | null
   tags?: string[]
   options?: { id: string; body: string; is_correct: boolean }[]
   accepted_answers?: string[]
@@ -50,6 +52,8 @@ export function QuestionEditorDialog({ open, onClose, onSaved, locale, question 
   const [explanation, setExplanation] = useState('')
   const [marks, setMarks] = useState(1)
   const [subject, setSubject] = useState('')
+  const [unit, setUnit] = useState('')
+  const [lesson, setLesson] = useState('')
   const [tagsInput, setTagsInput] = useState('')
   const [options, setOptions] = useState<Option[]>([
     { body: '', is_correct: false },
@@ -67,6 +71,8 @@ export function QuestionEditorDialog({ open, onClose, onSaved, locale, question 
       setExplanation(question.explanation || '')
       setMarks(question.default_marks)
       setSubject(question.subject || '')
+      setUnit(question.unit || '')
+      setLesson(question.lesson || '')
       setTagsInput((question.tags || []).join(', '))
       setModelAnswer(question.model_answer || '')
       setAcceptedAnswers((question.accepted_answers || []).join('\n'))
@@ -82,6 +88,8 @@ export function QuestionEditorDialog({ open, onClose, onSaved, locale, question 
       setExplanation('')
       setMarks(1)
       setSubject('')
+      setUnit('')
+      setLesson('')
       setTagsInput('')
       setOptions([{ body: '', is_correct: false }, { body: '', is_correct: false }])
       setAcceptedAnswers('')
@@ -127,6 +135,8 @@ export function QuestionEditorDialog({ open, onClose, onSaved, locale, question 
       explanation: explanation.trim() || undefined,
       default_marks: marks,
       subject: subject.trim() || undefined,
+      unit: unit.trim() || undefined,
+      lesson: lesson.trim() || undefined,
       tags: tagsInput.split(',').map((t) => t.trim()).filter(Boolean),
       options: ['mcq', 'true_false'].includes(type)
         ? options.filter((o) => o.body.trim())

@@ -22,6 +22,8 @@ export interface QuestionItem {
   explanation?: string
   default_marks: number
   subject?: string
+  unit?: string | null
+  lesson?: string | null
   tags: string[]
   is_locked: boolean
   options: { id: string; body: string; is_correct: boolean }[]
@@ -60,6 +62,8 @@ export function QuestionBankClientView({ locale, questions: initialQuestions }: 
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [subjectFilter, setSubjectFilter] = useState<string>('all')
+  const [unitFilter, setUnitFilter] = useState<string>('all')
+  const [lessonFilter, setLessonFilter] = useState<string>('all')
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [importing, setImporting] = useState(false)
@@ -72,22 +76,40 @@ export function QuestionBankClientView({ locale, questions: initialQuestions }: 
     essay:        isAr ? 'مقال' : 'Essay',
   }
 
-  // Unique subjects from all questions
+  // Unique subjects, units, lessons from all questions
   const allSubjects = useMemo(() => {
     const s = new Set(initialQuestions.map(q => q.subject).filter(Boolean) as string[])
     return Array.from(s).sort()
   }, [initialQuestions])
 
+  const allUnits = useMemo(() => {
+    const u = new Set(initialQuestions.map(q => q.unit).filter(Boolean) as string[])
+    return Array.from(u).sort()
+  }, [initialQuestions])
+
+  const allLessons = useMemo(() => {
+    // Filter lessons by selected unit if any
+    const source = unitFilter === 'all'
+      ? initialQuestions
+      : initialQuestions.filter(q => q.unit === unitFilter)
+    const l = new Set(source.map(q => q.lesson).filter(Boolean) as string[])
+    return Array.from(l).sort()
+  }, [initialQuestions, unitFilter])
+
   const filtered = useMemo(() => {
     return initialQuestions.filter((q) => {
       const matchSearch = !search || q.body.toLowerCase().includes(search.toLowerCase()) ||
         (q.subject || '').toLowerCase().includes(search.toLowerCase()) ||
+        (q.unit || '').toLowerCase().includes(search.toLowerCase()) ||
+        (q.lesson || '').toLowerCase().includes(search.toLowerCase()) ||
         q.tags.some((t) => t.toLowerCase().includes(search.toLowerCase()))
       const matchType = typeFilter === 'all' || q.type === typeFilter
       const matchSubject = subjectFilter === 'all' || q.subject === subjectFilter
-      return matchSearch && matchType && matchSubject
+      const matchUnit = unitFilter === 'all' || q.unit === unitFilter
+      const matchLesson = lessonFilter === 'all' || q.lesson === lessonFilter
+      return matchSearch && matchType && matchSubject && matchUnit && matchLesson
     })
-  }, [initialQuestions, search, typeFilter, subjectFilter])
+  }, [initialQuestions, search, typeFilter, subjectFilter, unitFilter, lessonFilter])
 
   // Count by type
   const typeCounts: Record<string, number> = { mcq: 0, true_false: 0, short_answer: 0, essay: 0 }
@@ -274,6 +296,58 @@ export function QuestionBankClientView({ locale, questions: initialQuestions }: 
         </div>
       )}
 
+      {/* Unit filter pills */}
+      {allUnits.length > 0 && (
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs text-muted-foreground font-medium">{isAr ? 'الوحدة:' : 'Unit:'}</span>
+          <button
+            onClick={() => { setUnitFilter('all'); setLessonFilter('all') }}
+            className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+              unitFilter === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'
+            }`}
+          >
+            {isAr ? 'الكل' : 'All'}
+          </button>
+          {allUnits.map(u => (
+            <button
+              key={u}
+              onClick={() => { setUnitFilter(unitFilter === u ? 'all' : u); setLessonFilter('all') }}
+              className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                unitFilter === u ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'
+              }`}
+            >
+              {u}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Lesson filter pills — only show when a unit is selected */}
+      {unitFilter !== 'all' && allLessons.length > 0 && (
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs text-muted-foreground font-medium">{isAr ? 'الدرس:' : 'Lesson:'}</span>
+          <button
+            onClick={() => setLessonFilter('all')}
+            className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+              lessonFilter === 'all' ? 'bg-secondary text-secondary-foreground border-secondary' : 'border-border hover:bg-muted'
+            }`}
+          >
+            {isAr ? 'الكل' : 'All'}
+          </button>
+          {allLessons.map(l => (
+            <button
+              key={l}
+              onClick={() => setLessonFilter(lessonFilter === l ? 'all' : l)}
+              className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                lessonFilter === l ? 'bg-secondary text-secondary-foreground border-secondary' : 'border-border hover:bg-muted'
+              }`}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Search */}
       <div className="relative">
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -281,7 +355,7 @@ export function QuestionBankClientView({ locale, questions: initialQuestions }: 
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder={isAr ? 'بحث بالنص أو المادة أو الوسوم...' : 'Search by text, subject, or tags...'}
+          placeholder={isAr ? 'بحث بالنص أو المادة أو الوحدة أو الدرس...' : 'Search by text, subject, unit, or lesson...'}
           className="w-full rounded-md border border-input bg-transparent ps-9 pe-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
       </div>
