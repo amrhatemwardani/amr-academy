@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Eye, EyeOff, Loader2, HelpCircle, CheckCircle2, MessageSquare, KeyRound, X } from 'lucide-react'
+import { Eye, EyeOff, Loader2, HelpCircle, CheckCircle2, MessageSquare, KeyRound, X, ScanFace } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { resolveLoginIdentifierAction, requestPasswordResetAction } from './actions'
+import { FaceIdLoginModal } from '@/components/auth/FaceIdLoginModal'
 
 interface Props {
   locale: string
@@ -23,6 +24,9 @@ export function LoginForm({ locale }: Props) {
   const [rememberMe, setRememberMe] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Face ID Modal State
+  const [showFaceIdModal, setShowFaceIdModal] = useState(false)
 
   // Forgot Password Modal State
   const [showForgotModal, setShowForgotModal] = useState(false)
@@ -254,6 +258,28 @@ export function LoginForm({ locale }: Props) {
                 : "Let's grow →"}
           </span>
         </button>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 my-0.5">
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-[11px] font-bold text-gray-400">
+            {isAr ? 'أو الدخول السريع' : 'or quick access'}
+          </span>
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
+
+        {/* Face ID / Biometrics Button */}
+        <button
+          type="button"
+          onClick={() => setShowFaceIdModal(true)}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 via-white to-amber-50 py-3 px-4 text-xs font-black text-gray-900 shadow-sm transition-all hover:bg-amber-100 hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <ScanFace className="h-4 w-4 text-[#f6b407]" />
+          <span>{isAr ? 'تسجيل الدخول عبر Face ID / بصمة الوجه' : 'Sign in with Face ID'}</span>
+          <span className="rounded-full bg-[#f6b407] text-white text-[9px] px-1.5 py-0.5 font-black">
+            ⚡ {isAr ? 'سريع' : 'Fast'}
+          </span>
+        </button>
       </form>
 
       {/* ── In-App Forgot Password Modal ── */}
@@ -357,6 +383,14 @@ export function LoginForm({ locale }: Props) {
           </div>
         </div>
       )}
+
+      {/* ── Face ID Biometrics Modal ── */}
+      <FaceIdLoginModal
+        locale={locale}
+        isOpen={showFaceIdModal}
+        onClose={() => setShowFaceIdModal(false)}
+        initialIdentifier={identifier}
+      />
     </>
   )
 }

@@ -22,10 +22,7 @@ export default async function StudentPortalLayout({
     .is('read_at', null)
 
   return (
-    <div
-      className="flex flex-col min-h-screen"
-      style={{ backgroundColor: '#fffdf5' }}
-    >
+    <div className="flex flex-col min-h-screen bg-[#fffdf5] dark:bg-[#0a0e17] text-gray-900 dark:text-slate-100 transition-colors duration-200">
       {/* Top bar with warm branding */}
       <TopBar
         userName={user.fullName}
@@ -47,9 +44,9 @@ export default async function StudentPortalLayout({
         position="top-center"
         toastOptions={{
           classNames: {
-            toast: 'border border-amber-200 bg-white text-gray-900 shadow-xl rounded-2xl',
-            error: 'border-red-300 bg-red-50 text-red-700',
-            success: 'border-emerald-300 bg-emerald-50 text-emerald-800',
+            toast: 'border border-amber-200 dark:border-slate-800 bg-white dark:bg-[#111726] text-gray-900 dark:text-slate-100 shadow-xl rounded-2xl',
+            error: 'border-red-300 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300',
+            success: 'border-emerald-300 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300',
           },
         }}
       />

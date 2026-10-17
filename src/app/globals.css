@@ -80,51 +80,52 @@
   }
 
   .dark {
-    /* ── Dark Mode: Deep Space Educational ────────────────────────── */
-    --background:           220 30% 8%;       /* #0d1016 deep space */
-    --foreground:           42  40% 94%;      /* warm white */
+    /* ── Dark Mode: Elegant Midnight Academic Brand Palette ──────────── */
+    --background:           222 36% 7%;       /* #0a0e17 deep midnight navy */
+    --foreground:           210 30% 98%;      /* crisp soft white */
 
-    --card:                 220 26% 12%;      /* #151b26 */
-    --card-foreground:      42  40% 94%;
+    --card:                 222 28% 11%;      /* #101726 */
+    --card-foreground:      210 30% 98%;
 
-    --popover:              220 26% 12%;
-    --popover-foreground:   42  40% 94%;
+    --popover:              222 28% 11%;
+    --popover-foreground:   210 30% 98%;
 
-    /* ── Primary in Dark: Kinder Yellow #f6b407 ──────────────────── */
-    --primary:              42  94% 50%;
-    --primary-foreground:   220 30% 8%;
+    /* ── Primary in Dark: Warm Radiant Gold #f7b91c ─────────────────── */
+    --primary:              42  96% 52%;
+    --primary-foreground:   222 36% 7%;
 
-    /* ── Secondary in Dark: Coral #e47364 ───────────────────────── */
-    --secondary:            9 70% 65%;
+    /* ── Secondary in Dark: Luminous Coral #eb6a59 ──────────────────── */
+    --secondary:            9 75% 64%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted:                220 22% 16%;
-    --muted-foreground:     220 15% 58%;
+    --muted:                222 24% 15%;
+    --muted-foreground:     217 19% 68%;
 
-    --accent:               222 100% 60%;
+    /* ── Accent: Royal Electric Blue #3b82f6 ────────────────────────── */
+    --accent:               221 86% 60%;
     --accent-foreground:    0 0% 100%;
 
-    --destructive:          334 77% 58%;
+    --destructive:          345 82% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border:               220 20% 20%;
-    --input:                220 20% 20%;
-    --ring:                 42  94% 50%;
+    --border:               222 22% 18%;      /* #1d2638 */
+    --input:                222 22% 18%;
+    --ring:                 42  96% 52%;
 
-    --chart-1:              42  94% 50%;
-    --chart-2:              222 100% 60%;
-    --chart-3:              334 77% 58%;
-    --chart-4:              165 100% 44%;
-    --chart-5:              9 70% 65%;
+    --chart-1:              42  96% 52%;
+    --chart-2:              221 86% 60%;
+    --chart-3:              345 82% 60%;
+    --chart-4:              165 95% 45%;
+    --chart-5:              9 75% 64%;
 
-    --sidebar-background:   220 30% 6%;
-    --sidebar-foreground:   42  40% 94%;
-    --sidebar-primary:      42  94% 50%;
-    --sidebar-primary-foreground: 220 30% 8%;
-    --sidebar-accent:       220 26% 12%;
-    --sidebar-accent-foreground:  42 40% 94%;
-    --sidebar-border:       220 20% 14%;
-    --sidebar-ring:         42  94% 50%;
+    --sidebar-background:   222 38% 6%;
+    --sidebar-foreground:   210 30% 98%;
+    --sidebar-primary:      42  96% 52%;
+    --sidebar-primary-foreground: 222 36% 7%;
+    --sidebar-accent:       222 26% 12%;
+    --sidebar-accent-foreground: 210 30% 98%;
+    --sidebar-border:       222 22% 14%;
+    --sidebar-ring:         42  96% 52%;
   }
 
   * {

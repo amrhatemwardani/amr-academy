@@ -46,7 +46,7 @@ export function TopBar({
     : `/${locale}/portal/profile`
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-amber-100 bg-white/95 backdrop-blur-md px-4 shadow-xs">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-amber-100/60 dark:border-slate-800/80 bg-white/95 dark:bg-[#0c111c]/95 backdrop-blur-md px-4 shadow-xs">
       {/* Brand logo (visible on mobile, and always in student portal) */}
       <div className={role === 'student' ? 'flex items-center gap-2.5' : 'flex lg:hidden items-center gap-2.5'}>
         <Link
@@ -57,8 +57,8 @@ export function TopBar({
             ⚡
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black text-gray-900 leading-tight">م. عمرو حاتم</span>
-            <span className="text-[10px] text-[#0050e3] font-extrabold leading-none">Academy</span>
+            <span className="text-xs font-black text-gray-900 dark:text-slate-100 leading-tight">م. عمرو حاتم</span>
+            <span className="text-[10px] text-[#0050e3] dark:text-[#60a5fa] font-extrabold leading-none">Academy</span>
           </div>
         </Link>
       </div>
