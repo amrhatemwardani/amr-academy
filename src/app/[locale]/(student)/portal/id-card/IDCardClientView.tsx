@@ -5,10 +5,11 @@ import Link from 'next/link'
 import QRCode from 'qrcode'
 import {
   CreditCard, Download, Printer, RotateCw, CheckCircle2, ShieldCheck,
-  GraduationCap, School, Phone, Calendar, ArrowLeft, ArrowRight, Sparkles, QrCode
+  GraduationCap, School, Phone, Calendar, ArrowLeft, ArrowRight, Sparkles, QrCode, Award
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { CertificateModal } from '@/components/certificates/CertificateModal'
 
 interface Props {
   locale: string
@@ -29,6 +30,7 @@ interface Props {
 export function IDCardClientView({ locale, student, academyName }: Props) {
   const isAr = locale === 'ar'
   const [isFlipped, setIsFlipped] = useState(false)
+  const [certOpen, setCertOpen] = useState(false)
   const [qrDataUrl, setQrDataUrl] = useState<string>('')
   const cardRef = useRef<HTMLDivElement>(null)
 
@@ -76,6 +78,14 @@ export function IDCardClientView({ locale, student, academyName }: Props) {
           >
             <RotateCw className="h-3.5 w-3.5 text-primary" />
             <span>{isAr ? 'قلب البطاقة' : 'Flip Card'}</span>
+          </button>
+
+          <button
+            onClick={() => setCertOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition-colors shadow-sm"
+          >
+            <Award className="h-3.5 w-3.5" />
+            <span>{isAr ? 'شهادة التقدير' : 'Certificate'}</span>
           </button>
 
           <button
@@ -252,6 +262,15 @@ export function IDCardClientView({ locale, student, academyName }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      {/* ── Certificate of Excellence Modal ──────────────────────── */}
+      <CertificateModal
+        open={certOpen}
+        onClose={() => setCertOpen(false)}
+        studentName={student.fullName}
+        studentCode={student.code}
+        locale={locale}
+      />
     </div>
   )
 }

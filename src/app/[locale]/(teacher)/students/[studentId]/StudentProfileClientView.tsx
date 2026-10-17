@@ -13,6 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { addStudentNoteAction, deleteStudentNoteAction } from './actions'
+import { CertificateModal } from '@/components/certificates/CertificateModal'
 
 interface AttendanceItem {
   id: string
@@ -113,6 +114,7 @@ export function StudentProfileClientView({
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'overview' | 'attendance' | 'finance' | 'exams' | 'notes'>('overview')
   const [newNote, setNewNote] = useState('')
+  const [certOpen, setCertOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   // Format phone for WhatsApp
@@ -215,6 +217,15 @@ export function StudentProfileClientView({
               </a>
             )
           })()}
+
+          <button
+            type="button"
+            onClick={() => setCertOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 text-white font-medium text-xs hover:bg-amber-600 transition-colors shadow-sm"
+          >
+            <Award className="h-3.5 w-3.5" />
+            <span>{isAr ? 'شهادة تقدير' : 'Certificate'}</span>
+          </button>
 
           <Link
             href={`/${locale}/messages`}
@@ -673,6 +684,15 @@ export function StudentProfileClientView({
           </Card>
         </div>
       )}
+
+      {/* ── Certificate of Excellence Modal ────────────────────── */}
+      <CertificateModal
+        open={certOpen}
+        onClose={() => setCertOpen(false)}
+        studentName={student.fullName}
+        studentCode={student.code}
+        locale={locale}
+      />
     </div>
   )
 }
