@@ -5,13 +5,24 @@ import { routing } from '@/i18n/routing'
 
 const intlMiddleware = createIntlMiddleware(routing)
 
-const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password']
+const PUBLIC_PATHS = [
+  '/',             // landing page (exact root after locale strip)
+  '/login',
+  '/forgot-password',
+  '/reset-password',
+  '/change-password',
+  '/apply',        // admission form
+  '/hall-of-fame', // public leaderboard
+]
 const API_PATHS = ['/api/']
 
 function isPublicPath(pathname: string): boolean {
   // Strip locale prefix for matching
   const withoutLocale = pathname.replace(/^\/(en|ar)/, '') || '/'
-  return PUBLIC_PATHS.some(p => withoutLocale.startsWith(p))
+  return PUBLIC_PATHS.some(p => {
+    if (p === '/') return withoutLocale === '/'  // exact match for root
+    return withoutLocale.startsWith(p)
+  })
 }
 
 function isApiPath(pathname: string): boolean {
