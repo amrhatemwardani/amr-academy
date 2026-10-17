@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
   TrendingUp, Users, BookOpen, CreditCard,
-  AlertCircle, BarChart2, Activity,
+  AlertCircle, BarChart2, Activity, Printer
 } from 'lucide-react'
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -33,13 +33,13 @@ interface Props {
 }
 
 // ── Palette ──────────────────────────────────────────────────────────
-const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#6366f1', '#06b6d4']
+const COLORS = ['#00e2ae', '#f6b407', '#e47364', '#0050e3', '#e51e6b']
 
 const STATUS_COLORS: Record<string, string> = {
-  active: '#10b981',
-  inactive: '#f59e0b',
-  suspended: '#ef4444',
-  archived: '#6b7280',
+  active: '#00e2ae',
+  inactive: '#f6b407',
+  suspended: '#e47364',
+  archived: '#9ca3af',
 }
 
 const fmt = (n: number) => `EGP ${n.toLocaleString('en-EG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
@@ -55,15 +55,15 @@ function KpiCard({
   sub?: string
 }) {
   return (
-    <Card>
+    <Card className="rounded-2xl border-2 shadow-xs transition-all hover:-translate-y-1 hover:shadow-md">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
-            {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+            <p className="text-xs font-bold text-muted-foreground">{title}</p>
+            <p className="text-2xl font-black text-foreground">{value}</p>
+            {sub && <p className="text-xs font-semibold text-muted-foreground">{sub}</p>}
           </div>
-          <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colorClass}`}>
+          <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${colorClass} shadow-xs`}>
             <Icon className="h-5 w-5" />
           </div>
         </div>
@@ -86,13 +86,23 @@ export function ReportsClientView({
   return (
     <div className="space-y-6 animate-fade-in" dir={isAr ? 'rtl' : 'ltr'}>
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {isAr ? 'التقارير والتحليلات' : 'Reports & Analytics'}
-        </h1>
-        <p className="text-muted-foreground text-sm mt-0.5">
-          {isAr ? 'نظرة عامة على أداء الأكاديمية' : 'Academy performance overview'}
-        </p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-gray-900">
+            {isAr ? 'التقارير والتحليلات' : 'Reports & Analytics'}
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">
+            {isAr ? 'نظرة عامة على أداء الأكاديمية والمالية والحضور' : 'Academy performance overview'}
+          </p>
+        </div>
+
+        <button
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-1.5 rounded-2xl bg-white hover:bg-gray-50 border-2 border-gray-200 text-gray-800 px-4 py-2 text-xs font-black shadow-xs transition-transform hover:scale-105 active:scale-95"
+        >
+          <Printer className="h-4 w-4 text-[#0050e3]" />
+          <span>{isAr ? 'طباعة التقرير الشامل' : 'Print Report'}</span>
+        </button>
       </div>
 
       {/* KPI Cards */}
@@ -101,26 +111,26 @@ export function ReportsClientView({
           title={isAr ? 'إجمالي المحصّل' : 'Total Collected'}
           value={fmt(stats.totalCollected)}
           icon={TrendingUp}
-          colorClass="bg-emerald-500/10 text-emerald-600"
+          colorClass="bg-[#00e2ae]/15 text-[#047857]"
         />
         <KpiCard
           title={isAr ? 'المبالغ المستحقة' : 'Outstanding Balance'}
           value={fmt(stats.totalOutstanding)}
           icon={CreditCard}
-          colorClass="bg-amber-500/10 text-amber-600"
+          colorClass="bg-[#e47364]/15 text-[#d63f24]"
           sub={isAr ? 'على جميع الطلاب' : 'Across all students'}
         />
         <KpiCard
           title={isAr ? 'إجمالي الطلاب' : 'Total Students'}
           value={stats.totalStudents.toString()}
           icon={Users}
-          colorClass="bg-primary/10 text-primary"
+          colorClass="bg-[#f6b407]/15 text-[#c48b05]"
         />
         <KpiCard
           title={isAr ? 'الفصول النشطة' : 'Active Classes'}
           value={stats.activeClasses.toString()}
           icon={BookOpen}
-          colorClass="bg-indigo-500/10 text-indigo-600"
+          colorClass="bg-[#0050e3]/10 text-[#0050e3]"
         />
       </div>
 
