@@ -24,6 +24,7 @@ import {
   ClipboardList,
   BookMarked,
   UserPlus,
+  Award,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { LogoutButton } from '@/components/ui/LogoutButton'
@@ -41,6 +42,7 @@ const getNavItems = (locale: string) => [
   { href: `/${locale}/materials`,      labelKey: 'materials',    icon: BookMarked },
   { href: `/${locale}/question-bank`,  labelKey: 'questionBank', icon: HelpCircle },
   { href: `/${locale}/leaderboard`,    labelKey: 'leaderboard',  icon: Trophy },
+  { href: `/${locale}/certificates`,   labelKey: 'certificates', icon: Award },
   { href: `/${locale}/messages`,       labelKey: 'messages',     icon: MessageSquare },
   { href: `/${locale}/reports`,        labelKey: 'reports',      icon: BarChart3 },
   { href: `/${locale}/settings`,       labelKey: 'settings',     icon: Settings },
