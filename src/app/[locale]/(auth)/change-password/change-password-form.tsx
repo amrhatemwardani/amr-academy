@@ -46,15 +46,15 @@ export function ChangePasswordForm({ locale, role, mustChangePassword }: ChangeP
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fff8e1] border-2 border-[#f6b407] text-[#c48b05]">
+      <div className="flex items-center gap-3 pb-3 border-b border-gray-100 dark:border-slate-800">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fff8e1] dark:bg-amber-950/40 border-2 border-[#f6b407] text-[#c48b05]">
           <ShieldCheck className="h-6 w-6" />
         </div>
         <div>
-          <h2 className="text-lg font-black text-gray-900">
+          <h2 className="text-lg font-black text-gray-900 dark:text-slate-100">
             {isAr ? 'تحديث كلمة المرور' : 'Change Password'}
           </h2>
-          <p className="text-xs text-gray-400 font-medium">
+          <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">
             {isAr
               ? 'اختر كلمة مرور قوية لحماية حسابك التعليمي'
               : 'Choose a strong password to protect your account'}
@@ -63,13 +63,13 @@ export function ChangePasswordForm({ locale, role, mustChangePassword }: ChangeP
       </div>
 
       {mustChangePassword && (
-        <div className="rounded-2xl bg-amber-50 border border-amber-300 p-3.5 text-xs text-amber-800 font-bold flex items-start gap-2.5">
+        <div className="rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800/80 p-3.5 text-xs text-amber-900 dark:text-amber-200 font-bold flex items-start gap-2.5">
           <span className="text-base shrink-0">⚠️</span>
           <div className="space-y-0.5 text-start">
             <p>{isAr ? 'مطلوب تحديث كلمة المرور للمتابعة' : 'Password change required to proceed'}</p>
-            <p className="font-normal text-[11px] text-amber-700">
+            <p className="font-normal text-[11px] text-amber-800/90 dark:text-amber-300/80 leading-relaxed">
               {isAr
-                ? 'طلب المعلم أو النظام تغيير كلمة المرور عند أول تسجيل دخول أو بعد إعادة التعيين. اكتب كلمة المرور المؤقتة ثم اختر كلمة مرورك الجديدة.'
+                ? 'طلب المعلم أو النظام تغيير كلمة المرور عند أول تسجيل دخول. اكتب كلمة المرور المؤقتة المسلمة لك ثم اختر كلمة مرورك الجديدة.'
                 : 'A password reset was required for your account. Please enter your temporary password and set a new password to continue.'}
             </p>
           </div>
@@ -79,7 +79,7 @@ export function ChangePasswordForm({ locale, role, mustChangePassword }: ChangeP
       {state.error && (
         <div
           role="alert"
-          className="rounded-2xl bg-red-50 border border-red-200 p-3 text-xs font-bold text-red-600 text-center"
+          className="rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/60 p-3 text-xs font-bold text-red-600 dark:text-red-400 text-center"
         >
           {state.error}
         </div>
@@ -90,7 +90,7 @@ export function ChangePasswordForm({ locale, role, mustChangePassword }: ChangeP
 
         {/* Current / Temporary Password */}
         <div className="space-y-1">
-          <label htmlFor="currentPassword" className="text-xs font-bold text-gray-700">
+          <label htmlFor="currentPassword" className="text-xs font-bold text-gray-700 dark:text-slate-300">
             {mustChangePassword
               ? isAr
                 ? 'كلمة المرور المؤقتة (التي سلمها لك المعلم)'
@@ -107,26 +107,26 @@ export function ChangePasswordForm({ locale, role, mustChangePassword }: ChangeP
               autoComplete="current-password"
               placeholder="••••••••"
               required
-              className="w-full rounded-2xl border border-[#eddcd6] bg-[#fcf6f3] px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition-all focus:border-[#d63f24] focus:ring-2 focus:ring-[#fce5d8] pe-10"
+              className="w-full rounded-2xl border border-[#eddcd6] dark:border-slate-800 bg-[#fcf6f3] dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none transition-all focus:border-[#d63f24] focus:ring-2 focus:ring-[#fce5d8] dark:focus:ring-amber-950/60 pe-10"
               dir="ltr"
             />
             <button
               type="button"
               onClick={() => setShowCurrent(!showCurrent)}
-              className="absolute end-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+              className="absolute end-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1"
               aria-label={showCurrent ? 'Hide password' : 'Show password'}
             >
               {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           {state.fieldErrors?.currentPassword && (
-            <p className="text-xs text-red-600 font-bold">{state.fieldErrors.currentPassword[0]}</p>
+            <p className="text-xs text-red-600 dark:text-red-400 font-bold">{state.fieldErrors.currentPassword[0]}</p>
           )}
         </div>
 
         {/* New Password */}
         <div className="space-y-1">
-          <label htmlFor="newPassword" className="text-xs font-bold text-gray-700">
+          <label htmlFor="newPassword" className="text-xs font-bold text-gray-700 dark:text-slate-300">
             {isAr ? 'كلمة المرور الجديدة' : 'New Password'}
           </label>
           <div className="relative">
@@ -140,13 +140,13 @@ export function ChangePasswordForm({ locale, role, mustChangePassword }: ChangeP
               onChange={(e) => setNewPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full rounded-2xl border border-[#eddcd6] bg-[#fcf6f3] px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition-all focus:border-[#d63f24] focus:ring-2 focus:ring-[#fce5d8] pe-10"
+              className="w-full rounded-2xl border border-[#eddcd6] dark:border-slate-800 bg-[#fcf6f3] dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none transition-all focus:border-[#d63f24] focus:ring-2 focus:ring-[#fce5d8] dark:focus:ring-amber-950/60 pe-10"
               dir="ltr"
             />
             <button
               type="button"
               onClick={() => setShowNew(!showNew)}
-              className="absolute end-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+              className="absolute end-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1"
               aria-label={showNew ? 'Hide password' : 'Show password'}
             >
               {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -157,8 +157,8 @@ export function ChangePasswordForm({ locale, role, mustChangePassword }: ChangeP
           {newPassword && (
             <div className="space-y-1.5 pt-1">
               <div className="flex items-center justify-between text-[11px]">
-                <span className="text-gray-400 font-medium">{isAr ? 'قوة كلمة المرور:' : 'Strength:'}</span>
-                <span className="font-bold text-gray-800">
+                <span className="text-gray-400 dark:text-slate-400 font-medium">{isAr ? 'قوة كلمة المرور:' : 'Strength:'}</span>
+                <span className="font-bold text-gray-800 dark:text-slate-200">
                   {isAr ? strength.labelAr : strength.labelEn}
                 </span>
               </div>
@@ -168,26 +168,26 @@ export function ChangePasswordForm({ locale, role, mustChangePassword }: ChangeP
                     key={level}
                     className={cn(
                       'rounded-full transition-all duration-300',
-                      level <= strength.score ? strength.color : 'bg-gray-100'
+                      level <= strength.score ? strength.color : 'bg-gray-100 dark:bg-slate-800'
                     )}
                   />
                 ))}
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] text-gray-500 pt-0.5">
-                <Check className={cn('h-3 w-3', newPassword.length >= 6 ? 'text-emerald-500' : 'text-gray-300')} />
+              <div className="flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-slate-400 pt-0.5">
+                <Check className={cn('h-3 w-3', newPassword.length >= 6 ? 'text-emerald-500' : 'text-gray-300 dark:text-slate-600')} />
                 <span>{isAr ? 'على الأقل 6 خانات' : 'At least 6 characters'}</span>
               </div>
             </div>
           )}
 
           {state.fieldErrors?.newPassword && (
-            <p className="text-xs text-red-600 font-bold">{state.fieldErrors.newPassword[0]}</p>
+            <p className="text-xs text-red-600 dark:text-red-400 font-bold">{state.fieldErrors.newPassword[0]}</p>
           )}
         </div>
 
         {/* Confirm New Password */}
         <div className="space-y-1">
-          <label htmlFor="confirmPassword" className="text-xs font-bold text-gray-700">
+          <label htmlFor="confirmPassword" className="text-xs font-bold text-gray-700 dark:text-slate-300">
             {isAr ? 'تأكيد كلمة المرور الجديدة' : 'Confirm New Password'}
           </label>
           <div className="relative">
@@ -199,20 +199,20 @@ export function ChangePasswordForm({ locale, role, mustChangePassword }: ChangeP
               placeholder="••••••••"
               required
               minLength={6}
-              className="w-full rounded-2xl border border-[#eddcd6] bg-[#fcf6f3] px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition-all focus:border-[#d63f24] focus:ring-2 focus:ring-[#fce5d8] pe-10"
+              className="w-full rounded-2xl border border-[#eddcd6] dark:border-slate-800 bg-[#fcf6f3] dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none transition-all focus:border-[#d63f24] focus:ring-2 focus:ring-[#fce5d8] dark:focus:ring-amber-950/60 pe-10"
               dir="ltr"
             />
             <button
               type="button"
               onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute end-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
+              className="absolute end-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1"
               aria-label={showConfirm ? 'Hide password' : 'Show password'}
             >
               {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           {state.fieldErrors?.confirmPassword && (
-            <p className="text-xs text-red-600 font-bold">{state.fieldErrors.confirmPassword[0]}</p>
+            <p className="text-xs text-red-600 dark:text-red-400 font-bold">{state.fieldErrors.confirmPassword[0]}</p>
           )}
         </div>
 
@@ -236,7 +236,7 @@ export function ChangePasswordForm({ locale, role, mustChangePassword }: ChangeP
         <div className="pt-2 text-center">
           <Link
             href={backHref}
-            className="inline-flex items-center gap-1.5 text-xs text-[#2563eb] hover:underline font-bold"
+            className="inline-flex items-center gap-1.5 text-xs text-[#2563eb] dark:text-[#60a5fa] hover:underline font-bold"
           >
             <BackIcon className="h-3.5 w-3.5" />
             <span>{isAr ? 'العودة إلى البوابة التعليمية' : 'Back to Portal'}</span>

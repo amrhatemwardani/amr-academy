@@ -19,10 +19,8 @@ export async function generateMetadata({
 
 export default async function ChangePasswordPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string }>
-  searchParams?: Promise<{ [key: string]: string | undefined }>
 }) {
   const { locale } = await params
   const isAr = locale === 'ar'
@@ -34,19 +32,18 @@ export default async function ChangePasswordPage({
 
   return (
     <main
-      className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 overflow-hidden"
+      className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 overflow-hidden bg-[#d8efe3] dark:bg-[#0a0e17] transition-colors"
       dir={isAr ? 'rtl' : 'ltr'}
-      style={{ backgroundColor: '#d8efe3' }}
     >
       {/* ── Decorative Background Blobs ── */}
       <div
-        className="pointer-events-none absolute -top-16 -right-16 w-72 h-72 rounded-full"
-        style={{ backgroundColor: '#c2d2fd', opacity: 0.9 }}
+        className="pointer-events-none absolute -top-16 -right-16 w-72 h-72 rounded-full dark:opacity-20 opacity-80"
+        style={{ backgroundColor: '#c2d2fd' }}
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 rounded-full"
-        style={{ backgroundColor: '#fed876', opacity: 0.95 }}
+        className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 rounded-full dark:opacity-20 opacity-80"
+        style={{ backgroundColor: '#fed876' }}
         aria-hidden="true"
       />
 
@@ -59,7 +56,7 @@ export default async function ChangePasswordPage({
         >
           <button
             type="submit"
-            className="inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur-md px-4 py-2 text-xs font-bold text-gray-700 shadow-sm hover:bg-white transition-all hover:scale-105"
+            className="inline-flex items-center gap-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-2 text-xs font-bold text-gray-700 dark:text-slate-200 border border-transparent dark:border-slate-800 shadow-sm hover:bg-white transition-all hover:scale-105"
           >
             <span>{isAr ? '← تسجيل الخروج' : 'Sign Out →'}</span>
           </button>
@@ -67,7 +64,7 @@ export default async function ChangePasswordPage({
       ) : (
         <Link
           href={user.role === 'teacher' ? `/${locale}/dashboard` : `/${locale}/portal`}
-          className="absolute top-5 start-5 z-20 inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur-md px-4 py-2 text-xs font-bold text-gray-700 shadow-sm hover:bg-white transition-all hover:scale-105"
+          className="absolute top-5 start-5 z-20 inline-flex items-center gap-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-2 text-xs font-bold text-gray-700 dark:text-slate-200 border border-transparent dark:border-slate-800 shadow-sm hover:bg-white transition-all hover:scale-105"
         >
           <span>{isAr ? '→ العودة للمنصة' : '← Back to Portal'}</span>
         </Link>
@@ -79,20 +76,20 @@ export default async function ChangePasswordPage({
           <div className="w-12 h-12 rounded-2xl bg-[#f6b407] flex items-center justify-center text-white text-2xl font-black shadow-md mb-2">
             🔐
           </div>
-          <h1 className="text-xl font-black text-gray-900">
+          <h1 className="text-xl font-black text-gray-900 dark:text-white">
             {isAr ? 'أكاديمية المهندس عمرو حاتم' : 'Eng. Amr Hatem Academy'}
           </h1>
-          <p className="text-xs text-gray-500 font-semibold">
+          <p className="text-xs text-gray-600 dark:text-slate-400 font-semibold">
             {isAr ? 'أمان وحماية الحساب' : 'Account Security & Settings'}
           </p>
         </div>
 
         {/* Change password card */}
         <div
-          className="rounded-[32px] bg-white p-7 sm:p-9 shadow-2xl border border-white/60"
+          className="rounded-[32px] bg-white dark:bg-[#111726] p-7 sm:p-9 shadow-2xl border border-white/60 dark:border-slate-800"
           style={{ boxShadow: '0 25px 60px -15px rgba(20, 80, 50, 0.12)' }}
         >
-          <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-gray-100" />}>
+          <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-gray-100 dark:bg-slate-800" />}>
             <ChangePasswordForm locale={locale} role={user.role} mustChangePassword={user.mustChangePassword} />
           </Suspense>
         </div>

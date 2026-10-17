@@ -10,9 +10,9 @@ const PUBLIC_PATHS = [
   '/login',
   '/forgot-password',
   '/reset-password',
-  '/change-password',
   '/apply',        // admission form
   '/hall-of-fame', // public leaderboard
+  '/verify',       // certificate verification
 ]
 const API_PATHS = ['/api/']
 
@@ -81,19 +81,34 @@ export async function middleware(request: NextRequest) {
 
   // Strip locale prefix from pathname for logic below
   const localelessPath = pathname.replace(/^\/(en|ar)/, '') || '/'
+  const locale = pathname.startsWith('/ar') ? 'ar' : 'en'
+
+  // ── Handle /change-password specifically ─────────────────────────
+  if (localelessPath.startsWith('/change-password')) {
+    if (!user) {
+      // Must be logged in to change password
+      return NextResponse.redirect(new URL(`/${locale}/login`, request.url))
+    }
+    // Allow logged-in user to view the change-password page! NEVER redirect away!
+    return response
+  }
 
   // ── Public paths: allow through ─────────────────────────────────
   if (isPublicPath(pathname)) {
-    // If already logged in, redirect to appropriate home
-    if (user) {
+    // If logged in and visiting root '/' or '/login', redirect to their portal/dashboard
+    if (user && (localelessPath === '/' || localelessPath.startsWith('/login'))) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, must_change_password')
         .eq('id', user.id)
         .single()
 
       if (profile) {
-        const locale = pathname.startsWith('/ar') ? 'ar' : 'en'
+        // If must change password, force them directly to /change-password
+        if (profile.must_change_password && profile.role === 'student') {
+          return NextResponse.redirect(new URL(`/${locale}/change-password`, request.url))
+        }
+
         const home =
           profile.role === 'teacher'
             ? `/${locale}/dashboard`
@@ -106,28 +121,34 @@ export async function middleware(request: NextRequest) {
 
   // ── Protected paths: require authentication ──────────────────────
   if (!user) {
-    const locale = pathname.startsWith('/ar') ? 'ar' : 'en'
     const loginUrl = new URL(`/${locale}/login`, request.url)
     loginUrl.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  // ── Role-based route guard ───────────────────────────────────────
-  // Read role from DB (not from JWT user_metadata — cannot be trusted)
+  // ── Role-based & Password Change Route Guard ─────────────────────
+  // Read role and must_change_password from DB (authoritative source)
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, must_change_password')
     .eq('id', user.id)
     .single()
 
   if (!profile) {
     // Profile missing — sign out and redirect
     await supabase.auth.signOut()
-    const locale = pathname.startsWith('/ar') ? 'ar' : 'en'
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url))
   }
 
-  const locale = pathname.startsWith('/ar') ? 'ar' : 'en'
+  // ── Enforce must_change_password guard ────────────────────────────
+  if (profile.must_change_password && profile.role === 'student') {
+    // Student MUST change password before accessing any protected page
+    if (!localelessPath.startsWith('/change-password')) {
+      return NextResponse.redirect(new URL(`/${locale}/change-password`, request.url))
+    }
+    return response
+  }
+
   const isTeacherRoute = localelessPath.startsWith('/dashboard') ||
     localelessPath.startsWith('/students') ||
     localelessPath.startsWith('/classes') ||
@@ -136,7 +157,9 @@ export async function middleware(request: NextRequest) {
     localelessPath.startsWith('/exams') ||
     localelessPath.startsWith('/question-bank') ||
     localelessPath.startsWith('/reports') ||
-    localelessPath.startsWith('/settings')
+    localelessPath.startsWith('/settings') ||
+    localelessPath.startsWith('/login-audit') ||
+    localelessPath.startsWith('/certificates')
 
   const isStudentRoute = localelessPath.startsWith('/portal')
 
