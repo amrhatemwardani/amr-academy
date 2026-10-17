@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import {
   Users, BookOpen, CalendarCheck, CreditCard,
-  TrendingUp, AlertCircle, Clock, BarChart2
+  TrendingUp, AlertCircle, Clock, BarChart2, UserPlus
 } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -101,11 +102,17 @@ function MetricsSkeleton() {
 }
 
 // ─── Metrics Fetcher (async Server Component) ───────────────────────
-async function DashboardMetrics() {
+async function DashboardMetrics({ locale }: { locale: string }) {
   const supabase = await createClient()
 
-  // Call dashboard_summary RPC
-  const { data, error } = await supabase.rpc('dashboard_summary')
+  // Call dashboard_summary RPC & fetch applications count
+  const [{ data, error }, { count: pendingAppsCount }] = await Promise.all([
+    supabase.rpc('dashboard_summary'),
+    (supabase.from('notifications' as any) as any)
+      .select('id', { count: 'exact', head: true })
+      .eq('type', 'admission_application')
+      .filter('metadata->>status', 'eq', 'pending'),
+  ])
 
   // On fresh DB (no seed data yet), data may be null — show zeros
   const summary: DashboardSummary = data ?? {
@@ -131,6 +138,16 @@ async function DashboardMetrics() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {/* New Applications Card (Clickable to /applications) */}
+      <Link href={`/${locale}/applications`}>
+        <MetricCard
+          title={locale === 'ar' ? 'طلبات الالتحاق الجديدة' : 'New Applications'}
+          value={pendingAppsCount || 0}
+          icon={UserPlus}
+          trend={locale === 'ar' ? 'اضغط للمراجعة والتواصل ↗' : 'Click to review ↗'}
+          variant={pendingAppsCount && pendingAppsCount > 0 ? 'warning' : 'default'}
+        />
+      </Link>
       <MetricCard
         title="Total Students"
         value={summary.total_students}
@@ -237,7 +254,7 @@ export default async function DashboardPage({
 
       {/* Metrics grid — streamed */}
       <Suspense fallback={<MetricsSkeleton />}>
-        <DashboardMetrics />
+        <DashboardMetrics locale={locale} />
       </Suspense>
 
       {/* Interactive Charts */}

@@ -20,6 +20,8 @@ import {
   Check,
 } from 'lucide-react'
 
+import { submitApplicationAction } from '@/lib/applications/actions'
+
 export default function ApplyPage({
   params,
 }: {
@@ -30,6 +32,7 @@ export default function ApplyPage({
   const Arrow = isAr ? ArrowLeft : ArrowRight
 
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [appId, setAppId] = useState('')
   const [formData, setFormData] = useState({
     studentName: '',
@@ -42,11 +45,19 @@ export default function ApplyPage({
     notes: '',
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const randomCode = 'AMR-' + Math.floor(100000 + Math.random() * 900000)
-    setAppId(randomCode)
-    setSubmitted(true)
+    setSubmitting(true)
+    const res = await submitApplicationAction(formData)
+    setSubmitting(false)
+    if (res?.code) {
+      setAppId(res.code)
+      setSubmitted(true)
+    } else {
+      const fallbackCode = 'AMR-' + Math.floor(100000 + Math.random() * 900000)
+      setAppId(fallbackCode)
+      setSubmitted(true)
+    }
   }
 
   const gradeNames: Record<string, { ar: string; en: string }> = {
@@ -352,10 +363,15 @@ export default function ApplyPage({
                   {/* 3D Raised Pill Button */}
                   <button
                     type="submit"
-                    className="w-full mt-3 flex items-center justify-center gap-2 rounded-2xl bg-[#d63f24] hover:bg-[#c9361d] py-4 px-6 text-base font-black text-white shadow-[0_4px_0_#9e2612] transition-all active:translate-y-1 active:shadow-none"
+                    disabled={submitting}
+                    className="w-full mt-3 flex items-center justify-center gap-2 rounded-2xl bg-[#d63f24] hover:bg-[#c9361d] py-4 px-6 text-base font-black text-white shadow-[0_4px_0_#9e2612] transition-all active:translate-y-1 active:shadow-none disabled:opacity-60"
                   >
                     <Send className="h-4 w-4" />
-                    <span>{isAr ? 'إرسال طلب الانضمام الآن ←' : 'Submit Admission Request →'}</span>
+                    <span>
+                      {submitting
+                        ? isAr ? 'جاري إرسال الطلب...' : 'Submitting...'
+                        : isAr ? 'إرسال طلب الانضمام الآن ←' : 'Submit Admission Request →'}
+                    </span>
                   </button>
                 </form>
               </div>

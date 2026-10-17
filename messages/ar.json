@@ -39,6 +39,7 @@
   },
   "nav": {
     "dashboard": "لوحة التحكم",
+    "applications": "طلبات الالتحاق",
     "students": "الطلاب",
     "classes": "الفصول",
     "attendance": "الحضور",

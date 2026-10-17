@@ -23,12 +23,14 @@ import {
   GraduationCap,
   ClipboardList,
   BookMarked,
+  UserPlus,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { LogoutButton } from '@/components/ui/LogoutButton'
 
 const getNavItems = (locale: string) => [
   { href: `/${locale}/dashboard`,      labelKey: 'dashboard',    icon: LayoutDashboard },
+  { href: `/${locale}/applications`,   labelKey: 'applications', icon: UserPlus },
   { href: `/${locale}/students`,       labelKey: 'students',     icon: Users },
   { href: `/${locale}/classes`,        labelKey: 'classes',      icon: BookOpen },
   { href: `/${locale}/attendance`,     labelKey: 'attendance',   icon: CalendarCheck },
