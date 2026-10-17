@@ -21,6 +21,8 @@ import {
   MessageSquare,
   ChevronRight,
   Timer,
+  CheckCircle2,
+  TrendingUp,
 } from 'lucide-react'
 
 export async function generateMetadata({
@@ -66,6 +68,7 @@ type BalanceRow = {
 // ── Dashboard Data Component ─────────────────────────────────────────────────
 
 async function StudentDashboardContent({ locale }: { locale: string }) {
+  const isAr = locale === 'ar'
   const user = await requireStudent(locale)
   const supabase = await createClient()
 
@@ -142,358 +145,383 @@ async function StudentDashboardContent({ locale }: { locale: string }) {
   const balance = balanceData?.balance ?? 0
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 p-6 text-white shadow-xl">
-        <div className="relative z-10 space-y-2">
+    <div className="space-y-6 animate-fade-in" dir={isAr ? 'rtl' : 'ltr'}>
+      {/* ── Sunny Kindergarten-Style Hero Banner ── */}
+      <div
+        className="relative overflow-hidden rounded-[32px] p-6 sm:p-8 shadow-xl text-gray-950 border-2 border-amber-200"
+        style={{
+          background: 'linear-gradient(135deg, #fff2b2 0%, #f6b407 50%, #e47364 100%)',
+        }}
+      >
+        {/* Floating playful physics icons */}
+        <div className="pointer-events-none select-none absolute top-4 end-6 text-3xl opacity-80 animate-bounce-apple">
+          🍎
+        </div>
+        <div className="pointer-events-none select-none absolute bottom-4 end-16 text-2xl opacity-75 animate-orbit-slow">
+          ⚛️
+        </div>
+
+        <div className="relative z-10 space-y-3">
+          {/* Badges row */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-md">
-              {student?.student_code ?? 'STUDENT'}
+            <span className="rounded-full bg-white/90 backdrop-blur-md px-3.5 py-1 text-xs font-black text-gray-900 shadow-xs">
+              🔖 {student?.student_code ?? 'STUDENT'}
             </span>
             <span
-              className={`rounded-full px-3 py-1 text-xs font-medium backdrop-blur-md ${
+              className={`rounded-full px-3 py-1 text-xs font-extrabold backdrop-blur-md shadow-xs ${
                 student?.status === 'active'
-                  ? 'bg-emerald-500/40 text-emerald-100'
-                  : 'bg-red-500/40 text-red-100'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-red-500 text-white'
               }`}
             >
-              {student?.status === 'active' ? (locale === 'ar' ? 'حساب نشط' : 'Active') : (locale === 'ar' ? 'معلق' : 'Inactive')}
+              {student?.status === 'active'
+                ? isAr ? '✓ حساب نشط ومفعّل' : 'Active Account'
+                : isAr ? 'معلق' : 'Inactive'}
             </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            {locale === 'ar'
-              ? `مرحباً، ${user.fullName}`
-              : `Welcome back, ${user.fullName}!`}
+
+          <h1 className="text-2xl sm:text-4xl font-black text-gray-950 tracking-tight leading-tight">
+            {isAr ? `أهلاً بك يا ${user.fullName} 👋` : `Welcome back, ${user.fullName}! 👋`}
           </h1>
-          <p className="text-sm text-indigo-100/90">
-            {locale === 'ar'
-              ? 'أكاديمية م. عمرو حاتم — تابع حضورك، واجباتك، وتفوقك الأكاديمي.'
-              : 'Eng. Amr Hatem Academy — Track attendance, assignments, and academic excellence.'}
+
+          <p className="text-xs sm:text-sm text-gray-900 font-medium max-w-lg leading-relaxed">
+            {isAr
+              ? 'أكاديمية م. عمرو حاتم — تابع واجباتك ونتائج امتحاناتك وكن دائماً في الصدارة!'
+              : 'Eng. Amr Hatem Academy — Track tasks, exams and stay on top of the leaderboard!'}
           </p>
 
-          {/* Quick Action Pills */}
-          <div className="flex items-center gap-2 pt-2 flex-wrap">
+          {/* Quick Action Pills (Sprout 3D style) */}
+          <div className="flex items-center gap-2.5 pt-2 flex-wrap">
             <Link
               href={`/${locale}/portal/leaderboard`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-xs font-semibold text-white transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-white hover:bg-amber-50 text-xs font-black text-gray-900 shadow-md transition-all hover:scale-105 active:scale-95"
             >
-              <Trophy className="h-3.5 w-3.5 text-amber-300" />
-              <span>{locale === 'ar' ? 'لوحة المتفوقين' : 'Hall of Fame'}</span>
+              <Trophy className="h-4 w-4 text-[#f6b407]" />
+              <span>{isAr ? 'لوحة المتفوقين' : 'Hall of Fame'}</span>
             </Link>
 
             <Link
               href={`/${locale}/portal/id-card`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-xs font-semibold text-white transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-white hover:bg-amber-50 text-xs font-black text-[#0050e3] shadow-md transition-all hover:scale-105 active:scale-95"
             >
-              <CreditCard className="h-3.5 w-3.5 text-indigo-200" />
-              <span>{locale === 'ar' ? 'الكارنيه الذكي (ID)' : 'Digital ID'}</span>
+              <CreditCard className="h-4 w-4 text-[#0050e3]" />
+              <span>{isAr ? 'الكارنيه الذكي (ID)' : 'Digital ID'}</span>
             </Link>
 
             <Link
               href={`/${locale}/portal/tasks`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 backdrop-blur-md text-xs font-semibold text-amber-200 transition-colors"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#0050e3] hover:bg-blue-700 text-xs font-black text-white shadow-md transition-all hover:scale-105 active:scale-95"
             >
-              <ClipboardList className="h-3.5 w-3.5 text-amber-300" />
-              <span>{locale === 'ar' ? 'تسليم الواجبات' : 'My Tasks'}</span>
+              <ClipboardList className="h-4 w-4 text-white" />
+              <span>{isAr ? 'تسليم الواجبات' : 'My Tasks'}</span>
             </Link>
           </div>
         </div>
-        <div className="pointer-events-none absolute -bottom-6 -right-6 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
       </div>
 
-      {/* Streak & Upcoming Exam Alerts */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {/* Streak Widget */}
-        <div className="flex items-center gap-3 p-4 rounded-xl border border-orange-200 dark:border-orange-900/40 bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent shadow-sm">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-md">
-            <Flame className="h-6 w-6 animate-pulse" />
+      {/* ── Streak & Upcoming Exam Alerts ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        {/* Streak Widget (Warm Yellow/Orange) */}
+        <div className="flex items-center gap-3.5 p-4 sm:p-5 rounded-3xl border-2 border-amber-300 bg-[#fff9e6] shadow-sm">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#f6b407] text-white shadow-md text-2xl">
+            🔥
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-foreground">
-                {streak > 0
-                  ? locale === 'ar'
-                    ? `${streak} حصص متتالية بدون غياب!`
-                    : `${streak}-Session Attendance Streak!`
-                  : locale === 'ar'
+            <span className="text-sm font-black text-gray-950 block">
+              {streak > 0
+                ? isAr
+                  ? `${streak} حصص متتالية بدون غياب!`
+                  : `${streak}-Session Attendance Streak!`
+                : isAr
                   ? 'ابدأ سلسلة حضورك اليوم!'
                   : 'Start your streak today!'}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            </span>
+            <p className="text-xs text-gray-600 font-semibold mt-0.5">
               {streak >= 5
-                ? locale === 'ar' ? '🔥 أداء أسطوري! حافظ على استمرارك!' : '🔥 Legendary consistency! Keep it up!'
+                ? isAr ? 'أداء أسطوري! استمر بنفس الحماس 🚀' : 'Legendary consistency! Keep it up!'
                 : streak > 0
-                ? locale === 'ar' ? 'التزامك بالحضور سر تفوقك الأكاديمي' : 'Your dedication leads to excellence'
-                : locale === 'ar' ? 'احضر كل الحصص لترتفع في لوحة الشرف' : 'Attend all classes to climb the leaderboard'}
+                  ? isAr ? 'التزامك بالحضور سر تفوقك الأكاديمي' : 'Your dedication leads to excellence'
+                  : isAr ? 'احضر الحصص القادمة واصعد للوحة الشرف' : 'Attend classes to climb the leaderboard'}
             </p>
           </div>
         </div>
 
-        {/* Upcoming Exam Countdown */}
+        {/* Upcoming Exam Countdown (Blue Card) */}
         {nextExam ? (
           <Link
             href={`/${locale}/portal/exams`}
-            className="flex items-center gap-3 p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/40 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent shadow-sm hover:shadow-md transition-shadow group"
+            className="flex items-center gap-3.5 p-4 sm:p-5 rounded-3xl border-2 border-[#0050e3]/30 bg-[#e8f4ff] shadow-sm hover:shadow-md transition-all group"
           >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-md">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0050e3] text-white shadow-md">
               <Timer className="h-6 w-6" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                {locale === 'ar' ? 'الامتحان القادم' : 'Upcoming Exam'}
+              <p className="text-[11px] font-black text-[#0050e3] uppercase">
+                {isAr ? 'الامتحان القادم' : 'Upcoming Exam'}
               </p>
-              <p className="text-sm font-bold text-foreground truncate">{nextExam.title}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-sm font-black text-gray-900 truncate">{nextExam.title}</p>
+              <p className="text-xs text-gray-600 font-bold mt-0.5">
                 {daysUntilExam === 0
-                  ? locale === 'ar' ? '⚡ موعد الامتحان اليوم!' : '⚡ Exam is today!'
-                  : locale === 'ar' ? `متبقي ${daysUntilExam} أيام` : `In ${daysUntilExam} days`}
+                  ? isAr ? '⚡ موعد الامتحان اليوم!' : '⚡ Exam is today!'
+                  : isAr ? `متبقي ${daysUntilExam} أيام` : `In ${daysUntilExam} days`}
               </p>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+            <ChevronRight className="h-5 w-5 text-[#0050e3] group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform shrink-0" />
           </Link>
         ) : (
           <Link
             href={`/${locale}/portal/resources`}
-            className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow group"
+            className="flex items-center gap-3.5 p-4 sm:p-5 rounded-3xl border-2 border-emerald-300 bg-[#e8fff8] shadow-sm hover:shadow-md transition-all group"
           >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#00e2ae] text-gray-950 shadow-md">
               <BookMarked className="h-6 w-6" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                {locale === 'ar' ? 'المذكرات والمواد' : 'Study Materials'}
+              <p className="text-[11px] font-black text-[#047857] uppercase">
+                {isAr ? 'المذكرات والمواد' : 'Study Materials'}
               </p>
-              <p className="text-sm font-bold text-foreground">
-                {locale === 'ar' ? 'تصفح ملخصات وفيديوهات م. عمرو' : "Browse Eng. Amr's Summaries"}
+              <p className="text-sm font-black text-gray-900">
+                {isAr ? 'ملخصات وقوانين م. عمرو' : "Browse Eng. Amr's Summaries"}
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {locale === 'ar' ? 'ملفات PDF وروابط مباشرة' : 'PDF sheets & video links'}
+              <p className="text-xs text-gray-600 font-bold mt-0.5">
+                {isAr ? 'أوراق وقوانين وروابط مباشرة' : 'PDF sheets & video links'}
               </p>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+            <ChevronRight className="h-5 w-5 text-[#047857] group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform shrink-0" />
           </Link>
         )}
       </div>
 
-      {/* Quick Action Navigation Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* ── Quick Action 4-Grid (Playful Weblium Cards) ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
         <Link
           href={`/${locale}/portal/tasks`}
-          className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-border bg-card hover:bg-muted/50 transition-colors text-center group"
+          className="flex flex-col items-center justify-center p-4 rounded-3xl border-2 border-amber-200 bg-white hover:bg-amber-50/60 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md text-center group"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 mb-2 group-hover:scale-105 transition-transform">
-            <ClipboardList className="h-5 w-5" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fff8e1] text-[#f6b407] text-2xl mb-2 group-hover:scale-110 transition-transform shadow-xs">
+            📝
           </div>
-          <span className="text-xs font-bold text-foreground">{locale === 'ar' ? 'الواجبات والمهام' : 'Tasks & HW'}</span>
-          <span className="text-[10px] text-muted-foreground mt-0.5">{locale === 'ar' ? 'تسليم الواجب' : 'Submit Work'}</span>
+          <span className="text-xs font-black text-gray-900">{isAr ? 'الواجبات والمهام' : 'Tasks & HW'}</span>
+          <span className="text-[10px] text-gray-500 font-bold mt-0.5">{isAr ? 'تسليم الواجب' : 'Submit Work'}</span>
         </Link>
 
         <Link
           href={`/${locale}/portal/resources`}
-          className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-border bg-card hover:bg-muted/50 transition-colors text-center group"
+          className="flex flex-col items-center justify-center p-4 rounded-3xl border-2 border-emerald-200 bg-white hover:bg-emerald-50/60 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md text-center group"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-2 group-hover:scale-105 transition-transform">
-            <BookMarked className="h-5 w-5" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#e8fff8] text-[#00e2ae] text-2xl mb-2 group-hover:scale-110 transition-transform shadow-xs">
+            📚
           </div>
-          <span className="text-xs font-bold text-foreground">{locale === 'ar' ? 'المذكرات والملخصات' : 'Materials'}</span>
-          <span className="text-[10px] text-muted-foreground mt-0.5">{locale === 'ar' ? 'أوراق وقوانين' : 'Formula Sheets'}</span>
+          <span className="text-xs font-black text-gray-900">{isAr ? 'المذكرات والملخصات' : 'Materials'}</span>
+          <span className="text-[10px] text-gray-500 font-bold mt-0.5">{isAr ? 'أوراق وقوانين' : 'Formula Sheets'}</span>
         </Link>
 
         <Link
           href={`/${locale}/portal/calendar`}
-          className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-border bg-card hover:bg-muted/50 transition-colors text-center group"
+          className="flex flex-col items-center justify-center p-4 rounded-3xl border-2 border-blue-200 bg-white hover:bg-blue-50/60 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md text-center group"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 mb-2 group-hover:scale-105 transition-transform">
-            <Calendar className="h-5 w-5" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#e8f4ff] text-[#0050e3] text-2xl mb-2 group-hover:scale-110 transition-transform shadow-xs">
+            🗓️
           </div>
-          <span className="text-xs font-bold text-foreground">{locale === 'ar' ? 'جدول الحصص' : 'Schedule'}</span>
-          <span className="text-[10px] text-muted-foreground mt-0.5">{locale === 'ar' ? 'المواعيد الأسبوعية' : 'Class Timetable'}</span>
+          <span className="text-xs font-black text-gray-900">{isAr ? 'جدول الحصص' : 'Schedule'}</span>
+          <span className="text-[10px] text-gray-500 font-bold mt-0.5">{isAr ? 'المواعيد الأسبوعية' : 'Class Timetable'}</span>
         </Link>
 
         <Link
           href={`/${locale}/portal/messages`}
-          className="flex flex-col items-center justify-center p-3.5 rounded-xl border border-border bg-card hover:bg-muted/50 transition-colors text-center group"
+          className="flex flex-col items-center justify-center p-4 rounded-3xl border-2 border-pink-200 bg-white hover:bg-pink-50/60 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md text-center group"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 mb-2 group-hover:scale-105 transition-transform">
-            <MessageSquare className="h-5 w-5" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fff0f5] text-[#e51e6b] text-2xl mb-2 group-hover:scale-110 transition-transform shadow-xs">
+            💬
           </div>
-          <span className="text-xs font-bold text-foreground">{locale === 'ar' ? 'مراسلة الأستاذ' : 'Ask Teacher'}</span>
-          <span className="text-[10px] text-muted-foreground mt-0.5">{locale === 'ar' ? 'م. عمرو حاتم' : 'Eng. Amr Hatem'}</span>
+          <span className="text-xs font-black text-gray-900">{isAr ? 'مراسلة الأستاذ' : 'Ask Teacher'}</span>
+          <span className="text-[10px] text-gray-500 font-bold mt-0.5">{isAr ? 'م. عمرو حاتم' : 'Eng. Amr Hatem'}</span>
         </Link>
       </div>
 
-      {/* Quick Metrics */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <Card className="border shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              {locale === 'ar' ? 'نسبة الحضور' : 'Attendance Rate'}
-            </CardTitle>
-            <UserCheck className="h-4 w-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold">{attendanceRate}%</div>
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              {presentClasses} / {totalClasses}{' '}
-              {locale === 'ar' ? 'حصص' : 'sessions'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              {locale === 'ar' ? 'متوسط الدرجات' : 'Exam Average'}
-            </CardTitle>
-            <Award className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold">{averagePercentage}%</div>
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              {totalExams} {locale === 'ar' ? 'امتحانات' : 'exams taken'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="col-span-2 border shadow-sm sm:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              {locale === 'ar' ? 'الرصيد المالي' : 'Account Balance'}
-            </CardTitle>
-            <Wallet className="h-4 w-4 text-indigo-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold">
-              {balance < 0
-                ? `-${Math.abs(balance).toLocaleString()} EGP`
-                : `${balance.toLocaleString()} EGP`}
+      {/* ── Key Metrics (Kindergarten Colorful Style) ── */}
+      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3">
+        {/* Attendance KPI */}
+        <div className="rounded-3xl border-2 border-emerald-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs font-extrabold text-gray-500">
+              {isAr ? 'نسبة الحضور' : 'Attendance'}
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-[#e8fff8] flex items-center justify-center text-[#047857]">
+              <UserCheck className="h-4 w-4" />
             </div>
-            <Badge
-              variant={balance < 0 ? 'destructive' : 'secondary'}
-              className="mt-1 text-[10px]"
-            >
-              {balance < 0
-                ? locale === 'ar'
-                  ? 'مستحق الدفع'
-                  : 'Payment Due'
-                : locale === 'ar'
-                ? 'مستقر'
-                : 'Settled'}
-            </Badge>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="text-2xl font-black text-gray-950">{attendanceRate}%</div>
+          <p className="mt-1 text-[11px] font-bold text-gray-500">
+            {presentClasses} / {totalClasses} {isAr ? 'حصص حضور' : 'sessions'}
+          </p>
+        </div>
+
+        {/* Exam Average KPI */}
+        <div className="rounded-3xl border-2 border-blue-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs font-extrabold text-gray-500">
+              {isAr ? 'متوسط الدرجات' : 'Exam Average'}
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-[#e8f4ff] flex items-center justify-center text-[#0050e3]">
+              <Award className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-gray-950">{averagePercentage}%</div>
+          <p className="mt-1 text-[11px] font-bold text-gray-500">
+            {totalExams} {isAr ? 'امتحانات مكتملة' : 'exams taken'}
+          </p>
+        </div>
+
+        {/* Account Balance KPI */}
+        <div className="col-span-2 sm:col-span-1 rounded-3xl border-2 border-amber-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between pb-2">
+            <span className="text-xs font-extrabold text-gray-500">
+              {isAr ? 'حالة المصروفات' : 'Tuition Status'}
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-[#fff8e1] flex items-center justify-center text-[#c48b05]">
+              <Wallet className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-gray-950">
+            {balance < 0
+              ? `-${Math.abs(balance).toLocaleString()} EGP`
+              : `${balance.toLocaleString()} EGP`}
+          </div>
+          <span
+            className={`inline-block mt-1 rounded-full px-2.5 py-0.5 text-[10px] font-extrabold ${
+              balance < 0
+                ? 'bg-red-100 text-red-700'
+                : 'bg-emerald-100 text-emerald-800'
+            }`}
+          >
+            {balance < 0
+              ? isAr ? 'مستحق السداد' : 'Payment Due'
+              : isAr ? '✓ سليم ومسدد' : 'Settled'}
+          </span>
+        </div>
       </div>
 
-      {/* Recent Exam Results */}
-      <Card className="border shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold">
-            <Award className="h-5 w-5 text-indigo-600" />
-            {locale === 'ar' ? 'أحدث نتائج الامتحانات' : 'Recent Exam Results'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {examResults.length > 0 ? (
-            <div className="space-y-3">
-              {examResults.map((result) => (
-                <div
-                  key={result.attempt_id}
-                  className="flex items-center justify-between rounded-lg bg-muted/40 p-3 transition-colors hover:bg-muted/70"
-                >
-                  <div>
-                    <p className="text-sm font-medium">
-                      {locale === 'ar' ? 'امتحان' : 'Exam'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {result.published_at
-                        ? new Date(result.published_at).toLocaleDateString()
-                        : ''}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold">
-                      {result.score} / {result.total}
-                    </div>
-                    <Badge
-                      variant={result.passed ? 'default' : 'destructive'}
-                      className="text-[10px]"
-                    >
-                      {result.percentage}%{' '}
-                      {result.passed
-                        ? locale === 'ar'
-                          ? '✓ ناجح'
-                          : '✓ Pass'
-                        : locale === 'ar'
-                        ? '✗ راسب'
-                        : '✗ Fail'}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              {locale === 'ar'
-                ? 'لا توجد امتحانات حتى الآن.'
-                : 'No exam results available yet.'}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      {/* ── Recent Exam Results ── */}
+      <div className="rounded-[32px] border-2 border-amber-100 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+          <h2 className="flex items-center gap-2 text-base font-black text-gray-900">
+            <Award className="h-5 w-5 text-[#f6b407]" />
+            <span>{isAr ? 'أحدث نتائج الامتحانات' : 'Recent Exam Results'}</span>
+          </h2>
+          <Link
+            href={`/${locale}/portal/exams`}
+            className="text-xs font-bold text-[#0050e3] hover:underline"
+          >
+            {isAr ? 'عرض الكل ←' : 'View all →'}
+          </Link>
+        </div>
 
-      {/* Recent Attendance */}
-      <Card className="border shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold">
-            <Clock className="h-5 w-5 text-indigo-600" />
-            {locale === 'ar' ? 'سجل الحضور الأخير' : 'Recent Attendance Log'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {attendance.length > 0 ? (
-            <div className="space-y-3">
-              {attendance.map((att) => (
-                <div
-                  key={att.id}
-                  className="flex items-center justify-between rounded-lg bg-muted/40 p-3 transition-colors hover:bg-muted/70"
-                >
-                  <div>
-                    <p className="text-sm font-medium">
-                      {locale === 'ar' ? 'حصة دراسية' : 'Class Session'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(att.date).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Badge
-                    variant={
-                      att.status === 'present'
-                        ? 'default'
-                        : att.status === 'late'
-                        ? 'secondary'
-                        : 'destructive'
-                    }
-                    className="capitalize text-xs"
-                  >
-                    {att.status === 'present'
-                      ? (locale === 'ar' ? 'حاضر' : 'Present')
-                      : att.status === 'late'
-                      ? (locale === 'ar' ? 'متأخر' : 'Late')
-                      : (locale === 'ar' ? 'غائب' : 'Absent')}
-                  </Badge>
+        {examResults.length > 0 ? (
+          <div className="space-y-3">
+            {examResults.map((result) => (
+              <div
+                key={result.attempt_id}
+                className="flex items-center justify-between rounded-2xl bg-[#fcf6f3] p-3.5 border border-[#eddcd6] transition-colors hover:bg-amber-50/50"
+              >
+                <div>
+                  <p className="text-sm font-black text-gray-900">
+                    {isAr ? 'اختبار تقييم فيزيائي' : 'Physics Exam'}
+                  </p>
+                  <p className="text-xs text-gray-500 font-bold mt-0.5">
+                    {result.published_at
+                      ? new Date(result.published_at).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      : ''}
+                  </p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              {locale === 'ar'
-                ? 'لا يوجد سجل حضور حتى الآن.'
-                : 'No attendance records yet.'}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+                <div className="text-end">
+                  <div className="text-sm font-black text-gray-900">
+                    {result.score} / {result.total}
+                  </div>
+                  <span
+                    className={`inline-block mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-black ${
+                      result.passed
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {result.percentage}% {result.passed ? (isAr ? '✓ ناجح' : '✓ Pass') : (isAr ? '✗ راسب' : '✗ Fail')}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="py-6 text-center text-sm font-bold text-gray-400">
+            {isAr ? 'لا توجد نتائج امتحانات منشورة حتى الآن.' : 'No exam results available yet.'}
+          </p>
+        )}
+      </div>
+
+      {/* ── Recent Attendance Log ── */}
+      <div className="rounded-[32px] border-2 border-emerald-100 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+          <h2 className="flex items-center gap-2 text-base font-black text-gray-900">
+            <Clock className="h-5 w-5 text-[#00e2ae]" />
+            <span>{isAr ? 'سجل الحضور الأخير' : 'Recent Attendance Log'}</span>
+          </h2>
+          <Link
+            href={`/${locale}/portal/attendance`}
+            className="text-xs font-bold text-[#0050e3] hover:underline"
+          >
+            {isAr ? 'عرض السجل كامل ←' : 'Full log →'}
+          </Link>
+        </div>
+
+        {attendance.length > 0 ? (
+          <div className="space-y-3">
+            {attendance.slice(0, 5).map((att) => (
+              <div
+                key={att.id}
+                className="flex items-center justify-between rounded-2xl bg-[#fcf6f3] p-3.5 border border-[#eddcd6] transition-colors hover:bg-emerald-50/50"
+              >
+                <div>
+                  <p className="text-sm font-black text-gray-900">
+                    {isAr ? 'حصة دراسية بالجدول' : 'Class Session'}
+                  </p>
+                  <p className="text-xs text-gray-500 font-bold mt-0.5">
+                    {new Date(att.date).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </p>
+                </div>
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-extrabold ${
+                    att.status === 'present'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : att.status === 'late'
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {att.status === 'present'
+                    ? (isAr ? '✓ حاضر' : 'Present')
+                    : att.status === 'late'
+                    ? (isAr ? 'متأخر' : 'Late')
+                    : (isAr ? 'غائب' : 'Absent')}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="py-6 text-center text-sm font-bold text-gray-400">
+            {isAr ? 'لا يوجد سجل حضور مسجل بعد.' : 'No attendance records yet.'}
+          </p>
+        )}
+      </div>
     </div>
   )
 }
@@ -510,14 +538,13 @@ export default async function StudentPortalPage({
     <Suspense
       fallback={
         <div className="space-y-6">
-          <Skeleton className="h-36 w-full rounded-2xl" />
+          <Skeleton className="h-44 w-full rounded-3xl" />
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <Skeleton className="h-24 w-full rounded-xl" />
-            <Skeleton className="h-24 w-full rounded-xl" />
-            <Skeleton className="h-24 w-full rounded-xl" />
+            <Skeleton className="h-28 w-full rounded-3xl" />
+            <Skeleton className="h-28 w-full rounded-3xl" />
+            <Skeleton className="h-28 w-full rounded-3xl" />
           </div>
-          <Skeleton className="h-48 w-full rounded-xl" />
-          <Skeleton className="h-48 w-full rounded-xl" />
+          <Skeleton className="h-48 w-full rounded-3xl" />
         </div>
       }
     >

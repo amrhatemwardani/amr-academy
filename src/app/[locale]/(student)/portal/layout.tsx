@@ -22,8 +22,11 @@ export default async function StudentPortalLayout({
     .is('read_at', null)
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* Top bar */}
+    <div
+      className="flex flex-col min-h-screen"
+      style={{ backgroundColor: '#fffdf5' }}
+    >
+      {/* Top bar with warm branding */}
       <TopBar
         userName={user.fullName}
         role="student"
@@ -31,9 +34,8 @@ export default async function StudentPortalLayout({
       />
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto pb-20">
-        {/* pb-20 accounts for the fixed bottom nav */}
-        <div className="container mx-auto max-w-2xl px-4 py-4">
+      <main className="flex-1 overflow-y-auto pb-24">
+        <div className="container mx-auto max-w-3xl px-4 py-5">
           {children}
         </div>
       </main>
@@ -45,13 +47,12 @@ export default async function StudentPortalLayout({
         position="top-center"
         toastOptions={{
           classNames: {
-            toast: 'border border-border bg-background text-foreground shadow-lg',
-            error: 'border-destructive/30 bg-destructive/10 text-destructive',
-            success: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+            toast: 'border border-amber-200 bg-white text-gray-900 shadow-xl rounded-2xl',
+            error: 'border-red-300 bg-red-50 text-red-700',
+            success: 'border-emerald-300 bg-emerald-50 text-emerald-800',
           },
         }}
       />
     </div>
   )
 }
-

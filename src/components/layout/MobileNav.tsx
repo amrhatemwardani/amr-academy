@@ -40,15 +40,17 @@ export function MobileNav() {
               <Link
                 href={href}
                 className={cn(
-                  'flex flex-col items-center justify-center h-full gap-0.5 text-[9px] font-medium transition-colors duration-150',
+                  'flex flex-col items-center justify-center h-full gap-0.5 text-[9px] font-bold transition-all duration-150',
                   isActive
-                    ? 'text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'text-[#0050e3]'
+                    : 'text-gray-500 hover:text-gray-900'
                 )}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <Icon className={cn('h-4 w-4 transition-transform duration-150', isActive && 'scale-110')} />
-                <span className="leading-none truncate max-w-[3rem]">
+                <div className={cn('p-1 rounded-xl transition-all', isActive && 'bg-[#e8f4ff] scale-110')}>
+                  <Icon className={cn('h-4 w-4', isActive ? 'text-[#0050e3]' : 'text-gray-500')} />
+                </div>
+                <span className={cn('leading-none truncate max-w-[3.5rem]', isActive && 'text-[#0050e3] font-black')}>
                   {t(labelKey as Parameters<typeof t>[0])}
                 </span>
               </Link>

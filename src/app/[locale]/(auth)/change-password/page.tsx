@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { ChangePasswordForm } from './change-password-form'
 import { getCurrentUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { GraduationCap } from 'lucide-react'
+import Link from 'next/link'
 
 export async function generateMetadata({
   params,
@@ -12,12 +12,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   return {
-    title: locale === 'ar' ? 'تغيير كلمة المرور | أكاديمية م. عمرو حاتم' : 'Change Password | Eng. Amr Hatem Academy',
+    title: locale === 'ar' ? 'تحديث كلمة المرور | أكاديمية م. عمرو حاتم' : 'Change Password | Eng. Amr Hatem Academy',
   }
 }
-
-import Image from 'next/image'
-import Link from 'next/link'
 
 export default async function ChangePasswordPage({
   params,
@@ -33,37 +30,51 @@ export default async function ChangePasswordPage({
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-background relative overflow-hidden">
-      {/* Background ambient lighting */}
-      <div className="absolute -top-32 -start-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -end-32 h-96 w-96 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+    <main
+      className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 overflow-hidden"
+      dir={isAr ? 'rtl' : 'ltr'}
+      style={{ backgroundColor: '#d8efe3' }}
+    >
+      {/* ── Decorative Background Blobs (Sprout Style) ── */}
+      <div
+        className="pointer-events-none absolute -top-16 -right-16 w-72 h-72 rounded-full"
+        style={{ backgroundColor: '#c2d2fd', opacity: 0.9 }}
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 rounded-full"
+        style={{ backgroundColor: '#fed876', opacity: 0.95 }}
+        aria-hidden="true"
+      />
 
-      <div className="w-full max-w-md relative z-10 space-y-6">
-        {/* Top Academy Header with Logo */}
-        <div className="flex flex-col items-center text-center space-y-2">
-          <Link href={`/${locale}`} className="inline-block">
-            <Image
-              src="/logo.svg"
-              alt="Eng. Amr Hatem Academy"
-              width={220}
-              height={68}
-              priority
-              className="h-14 w-auto object-contain mx-auto"
-            />
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold text-foreground">
-              {isAr ? 'أكاديمية م. عمرو حاتم' : 'Eng. Amr Hatem Academy'}
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {isAr ? 'إدارة وأمان الحساب' : 'Account Security & Settings'}
-            </p>
+      {/* Back button */}
+      <Link
+        href={user.role === 'teacher' ? `/${locale}/dashboard` : `/${locale}/portal`}
+        className="absolute top-5 start-5 z-20 inline-flex items-center gap-1.5 rounded-full bg-white/80 backdrop-blur-md px-4 py-2 text-xs font-bold text-gray-700 shadow-sm hover:bg-white transition-all hover:scale-105"
+      >
+        <span>{isAr ? '→ العودة للمنصة' : '← Back to Portal'}</span>
+      </Link>
+
+      <div className="w-full max-w-md relative z-10 space-y-4">
+        {/* Brand Header */}
+        <div className="flex flex-col items-center text-center">
+          <div className="w-12 h-12 rounded-2xl bg-[#f6b407] flex items-center justify-center text-white text-2xl font-black shadow-md mb-2">
+            🔐
           </div>
+          <h1 className="text-xl font-black text-gray-900">
+            {isAr ? 'أكاديمية المهندس عمرو حاتم' : 'Eng. Amr Hatem Academy'}
+          </h1>
+          <p className="text-xs text-gray-500 font-semibold">
+            {isAr ? 'أمان وحماية الحساب' : 'Account Security & Settings'}
+          </p>
         </div>
 
         {/* Change password card */}
-        <div className="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-xl p-6 sm:p-8 shadow-xl shadow-black/5">
-          <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-muted" />}>
+        <div
+          className="rounded-[32px] bg-white p-7 sm:p-9 shadow-2xl border border-white/60"
+          style={{ boxShadow: '0 25px 60px -15px rgba(20, 80, 50, 0.12)' }}
+        >
+          <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-gray-100" />}>
             <ChangePasswordForm locale={locale} role={user.role} />
           </Suspense>
         </div>

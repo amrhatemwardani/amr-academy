@@ -44,10 +44,10 @@ function MetricCard({
   variant?: 'default' | 'success' | 'warning' | 'destructive'
 }) {
   const colorMap = {
-    default:     { bg: 'bg-primary/10',     text: 'text-primary' },
-    success:     { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400' },
-    warning:     { bg: 'bg-amber-500/10',   text: 'text-amber-600 dark:text-amber-400' },
-    destructive: { bg: 'bg-red-500/10',     text: 'text-red-600 dark:text-red-400' },
+    default:     { bg: 'bg-[#0050e3]/10',  text: 'text-[#0050e3]', border: 'border-blue-100 hover:border-blue-300' },
+    success:     { bg: 'bg-[#00e2ae]/15',  text: 'text-[#047857]', border: 'border-emerald-100 hover:border-emerald-300' },
+    warning:     { bg: 'bg-[#f6b407]/15',  text: 'text-[#c48b05]', border: 'border-amber-100 hover:border-amber-300' },
+    destructive: { bg: 'bg-[#e47364]/15',  text: 'text-[#d63f24]', border: 'border-rose-100 hover:border-rose-300' },
   }
   const colors = colorMap[variant]
 
@@ -61,15 +61,15 @@ function MetricCard({
       : value.toLocaleString()
 
   return (
-    <Card className="card-hover">
+    <Card className={`rounded-2xl border-2 shadow-xs transition-all hover:-translate-y-1 hover:shadow-md ${colors.border}`}>
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground font-medium">{title}</p>
-            <p className="text-2xl font-bold tracking-tight">{formatted}</p>
-            {trend && <p className="text-xs text-muted-foreground">{trend}</p>}
+            <p className="text-xs text-muted-foreground font-bold">{title}</p>
+            <p className="text-2xl font-black tracking-tight text-foreground">{formatted}</p>
+            {trend && <p className="text-xs font-semibold text-muted-foreground">{trend}</p>}
           </div>
-          <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${colors.bg}`}>
+          <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${colors.bg} shadow-xs`}>
             <Icon className={`h-5 w-5 ${colors.text}`} />
           </div>
         </div>
@@ -230,8 +230,8 @@ export default async function DashboardPage({
             Welcome back, <span className="font-medium text-foreground">{user.fullName}</span>
           </p>
         </div>
-        <Badge variant="outline" className="hidden sm:flex">
-          Amr Academy — SMS
+        <Badge className="hidden sm:flex bg-[#fff8e1] border-[#f6b407] text-[#c48b05] font-black">
+          ⚡ Amr Academy — Teacher Portal
         </Badge>
       </div>
 

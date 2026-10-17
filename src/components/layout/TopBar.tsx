@@ -46,23 +46,19 @@ export function TopBar({
     : `/${locale}/portal/profile`
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-amber-100 bg-white/95 backdrop-blur-md px-4 shadow-xs">
       {/* Brand logo (visible on mobile, and always in student portal) */}
       <div className={role === 'student' ? 'flex items-center gap-2.5' : 'flex lg:hidden items-center gap-2.5'}>
         <Link
           href={`/${locale}`}
           className="flex items-center gap-2 hover:opacity-90 transition-opacity"
         >
-          <Image
-            src="/logo-icon.svg"
-            alt="Amr Hatem Academy"
-            width={32}
-            height={32}
-            className="h-8 w-8 object-contain"
-          />
+          <div className="w-8 h-8 rounded-xl bg-[#f6b407] flex items-center justify-center text-white text-base font-black shadow-xs">
+            ⚡
+          </div>
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-foreground leading-tight">م. عمرو حاتم</span>
-            <span className="text-[10px] text-accent font-semibold leading-none">Academy</span>
+            <span className="text-xs font-black text-gray-900 leading-tight">م. عمرو حاتم</span>
+            <span className="text-[10px] text-[#0050e3] font-extrabold leading-none">Academy</span>
           </div>
         </Link>
       </div>
