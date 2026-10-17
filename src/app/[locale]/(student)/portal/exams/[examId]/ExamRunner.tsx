@@ -10,6 +10,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { saveAnswersAction, submitAttemptAction } from './actions'
+import { MathText } from '@/components/ui/MathText'
 
 interface Option {
   id: string
@@ -403,7 +404,7 @@ export function ExamRunner({ locale, exam, attempt, initialQuestions }: Props) {
 
             {/* Question Body */}
             <div className="text-base sm:text-lg font-medium leading-relaxed whitespace-pre-wrap">
-              {currentQ.body}
+              <MathText text={currentQ.body} />
             </div>
 
             {/* MCQ Options */}
@@ -434,7 +435,7 @@ export function ExamRunner({ locale, exam, attempt, initialQuestions }: Props) {
                         {letter}
                       </span>
                       <span className="flex-1 text-sm sm:text-base font-normal text-foreground">
-                        {opt.body}
+                        <MathText text={opt.body} />
                       </span>
                       {isSelected && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
                     </button>
@@ -462,7 +463,7 @@ export function ExamRunner({ locale, exam, attempt, initialQuestions }: Props) {
                       }`}
                     >
                       <span className="text-xl">{isTrue ? '✓' : '✗'}</span>
-                      <span>{opt.body}</span>
+                      <span><MathText text={opt.body} /></span>
                     </button>
                   )
                 })}

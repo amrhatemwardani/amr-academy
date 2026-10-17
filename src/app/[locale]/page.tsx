@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getCurrentUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import { createAdminClient } from '@/lib/supabase/admin'
 import {
   BookOpen,
   Trophy,
@@ -25,8 +26,10 @@ import {
   MapPin,
   Clock,
   Award,
+  Flame,
 } from 'lucide-react'
 import { YouTubeGallery } from '@/components/public/YouTubeGallery'
+import { PhysicsMathBackdrop } from '@/components/public/PhysicsMathBackdrop'
 
 export default async function LandingPage({
   params,
@@ -36,113 +39,100 @@ export default async function LandingPage({
   const { locale } = await params
   const user = await getCurrentUser()
 
-  // Authenticated users skip the landing and go directly to their dashboard/portal
+  // Authenticated users go directly to their dashboard/portal
   if (user) {
     if (user.role === 'teacher') redirect(`/${locale}/dashboard`)
     else redirect(`/${locale}/portal`)
   }
 
   const isAr = locale === 'ar'
-  const Arrow = isAr ? ArrowLeft : ArrowRight
+  const admin = createAdminClient()
 
-  const features = [
-    {
-      icon: BookOpen,
-      titleEn: 'Physics & Math Digital Classes',
-      titleAr: 'حصص الفيزياء والرياضيات التفاعلية',
-      descEn: 'Structured curriculums, lesson notes, and recorded explanations.',
-      descAr: 'مناهج منظمة، مذكرات الدروس، وشروحات مسجلة لكافة المستويات.',
-      color: 'bg-primary text-primary-foreground',
-    },
-    {
-      icon: Zap,
-      titleEn: 'QR Code Attendance',
-      titleAr: 'تسجيل الحضور بالباركود السريع',
-      descEn: 'Instant attendance via QR scan — accurate records with zero wasted time.',
-      descAr: 'حضور ذكي وفوري عبر مسح QR — تقارير دقيقة بدون تضييع وقت الحصة.',
-      color: 'bg-secondary text-secondary-foreground',
-    },
-    {
-      icon: Trophy,
-      titleEn: 'Leaderboard & Hall of Fame',
-      titleAr: 'لوحة الشرف وتكريم المتفوقين',
-      descEn: 'Motivate students with live rankings, badges, and academic achievements.',
-      descAr: 'تحفيز مستمر للطلاب من خلال لوحة المتفوقين والأوسمة والشهادات.',
-      color: 'bg-[#F2B134] text-[#0F2A4A]',
-    },
-    {
-      icon: BarChart3,
-      titleEn: 'Question Bank & Auto-Exams',
-      titleAr: 'بنك أسئلة وامتحانات فورية',
-      descEn: 'Smart tests with categorized questions by unit, difficulty, and instant grading.',
-      descAr: 'امتحانات تدريبية وإلكترونية مصنفة حسب الوحدات ومستويات الصعوبة.',
-      color: 'bg-primary text-primary-foreground',
-    },
-    {
-      icon: Shield,
-      titleEn: 'Digital Student ID Card',
-      titleAr: 'كارنيه الطالب الذكي',
-      descEn: 'Digital student identification with QR code for classroom entry.',
-      descAr: 'كارنيه رقمي متطور لكل طالب مزود برمز QR للتحقق السريع.',
-      color: 'bg-secondary text-secondary-foreground',
-    },
-    {
-      icon: MessageSquare,
-      titleEn: 'Direct Teacher Communication',
-      titleAr: 'متابعة مباشرة مع أولياء الأمور',
-      descEn: 'Immediate updates on grades, homework submissions, and attendance.',
-      descAr: 'إشعارات وتقارير دورية لأولياء الأمور عن الحضور والدرجات عبر واتساب.',
-      color: 'bg-[#F2B134] text-[#0F2A4A]',
-    },
-  ]
+  // 1. Fetch real top students from database for the Hall of Fame preview
+  const { data: topResults } = await (admin.from('exam_results' as any) as any)
+    .select(`
+      id, score, total, percentage,
+      exams ( title ),
+      students (
+        id, student_code, grade,
+        profiles ( full_name )
+      )
+    `)
+    .order('percentage', { ascending: false })
+    .limit(4)
 
-  const stats = [
-    { numEn: '500+', numAr: '+٥٠٠', labelEn: 'Students Enrolled', labelAr: 'طالب وطالبة' },
-    { numEn: '98%', numAr: '٩٨٪', labelEn: 'Exam Pass Rate', labelAr: 'نسبة التفوق والنجاح' },
-    { numEn: '4.9★', numAr: '٤٫٩★', labelEn: 'Parent & Student Rating', labelAr: 'تقييم الطلاب وأولياء الأمور' },
-    { numEn: '10+', numAr: '+١٠', labelEn: 'Years Experience', labelAr: 'سنوات خبرة تعليمية' },
-  ]
+  const { data: activeStudents } = await (admin.from('students' as any) as any)
+    .select('id, student_code, profiles(full_name)')
+    .eq('status', 'active')
+    .limit(4)
+
+  // Merge real student names
+  const realHonorNames: { name: string; score: string; code: string }[] = []
+  const seenIds = new Set<string>()
+
+  ;((topResults as any[]) || []).forEach((r: any) => {
+    if (r.students?.profiles?.full_name && !seenIds.has(r.students.id)) {
+      seenIds.add(r.students.id)
+      realHonorNames.push({
+        name: r.students.profiles.full_name,
+        score: `${r.percentage}%`,
+        code: r.students.student_code || 'S1001',
+      })
+    }
+  })
+
+  ;((activeStudents as any[]) || []).forEach((s: any) => {
+    if (s.profiles?.full_name && !seenIds.has(s.id) && realHonorNames.length < 4) {
+      seenIds.add(s.id)
+      realHonorNames.push({
+        name: s.profiles.full_name,
+        score: '100% تميز',
+        code: s.student_code || 'S1001',
+      })
+    }
+  })
 
   return (
-    <div className={`min-h-screen bg-background ${isAr ? 'font-arabic' : ''}`} dir={isAr ? 'rtl' : 'ltr'}>
-      
-      {/* ── NAV BAR ─────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <div className={`min-h-screen bg-background text-foreground relative overflow-hidden ${isAr ? 'font-arabic' : ''}`} dir={isAr ? 'rtl' : 'ltr'}>
+      {/* ── Floating Math & Physics Formulas Backdrop ─────────────────── */}
+      <PhysicsMathBackdrop />
+
+      {/* ── TOP NAVIGATION ────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
         <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Link href={`/${locale}`} className="flex items-center gap-2 hover:opacity-95 transition-opacity">
+          <Link href={`/${locale}`} className="flex items-center gap-2 hover:opacity-90 transition-opacity">
             <Image
               src="/logo.svg"
               alt="Eng. Amr Hatem Academy"
-              width={200}
-              height={56}
+              width={190}
+              height={52}
               priority
               className="h-10 w-auto object-contain dark:brightness-0 dark:invert"
             />
           </Link>
 
-          <nav className="flex items-center gap-1.5 sm:gap-2.5">
+          <nav className="flex items-center gap-2 sm:gap-3">
             <Link
               href={`/${locale}/hall-of-fame`}
-              className="hidden sm:inline-flex text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+              className="hidden sm:inline-flex text-xs sm:text-sm font-bold text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1 rounded-lg hover:bg-muted"
             >
-              {isAr ? 'لوحة الشرف' : 'Hall of Fame'}
+              {isAr ? '🏆 لوحة الشرف' : '🏆 Hall of Fame'}
             </Link>
             <Link
               href={`/${locale}/apply`}
-              className="rounded-xl bg-[#F2B134] text-[#0F2A4A] px-3.5 py-1.5 text-xs sm:text-sm font-bold shadow hover:bg-[#F2B134]/90 transition-all hover:scale-105"
+              className="rounded-xl bg-[#F2B134] text-[#0F2A4A] px-3.5 py-1.5 text-xs sm:text-sm font-bold shadow-sm hover:bg-[#F2B134]/90 transition-all hover:scale-105"
             >
-              {isAr ? 'التحق بنا' : 'Apply Now'}
+              {isAr ? 'احجز مكانك' : 'Apply Now'}
             </Link>
             <Link
               href={`/${locale}/login`}
-              className="rounded-xl border border-border px-3 py-1.5 text-xs sm:text-sm font-semibold text-foreground transition-all hover:bg-muted"
+              className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs sm:text-sm font-bold text-foreground transition-all hover:bg-muted"
             >
               {isAr ? 'دخول المنصة' : 'Sign In'}
             </Link>
             <Link
               href={isAr ? '/en' : '/ar'}
-              className="inline-flex items-center gap-1 rounded-xl border border-border px-2 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all"
-              title={isAr ? 'Switch to English' : 'التحويل للعربية'}
+              className="inline-flex items-center gap-1 rounded-xl border border-border px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-all"
             >
               <Globe className="h-3.5 w-3.5" />
               <span>{isAr ? 'EN' : 'عربي'}</span>
@@ -151,629 +141,341 @@ export default async function LandingPage({
         </div>
       </header>
 
-      {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#07172B] via-[#0F2A4A] to-[#0A1D33] py-20 sm:py-28 text-white">
-        {/* Subtle Physics & Math Pattern */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.06] overflow-hidden">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="hero-grid" width="48" height="48" patternUnits="userSpaceOnUse">
-                <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#FFFFFF" strokeWidth="0.8" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#hero-grid)" />
-            <ellipse cx="80%" cy="40%" rx="260" ry="90" fill="none" stroke="#F2B134" strokeWidth="2" transform="rotate(25 500 250)" />
-            <ellipse cx="80%" cy="40%" rx="260" ry="90" fill="none" stroke="#14A3A3" strokeWidth="2" transform="rotate(-35 500 250)" />
-          </svg>
-        </div>
-
-        {/* Ambient brand glow */}
-        <div className="pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#14A3A3]/25 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-[#F2B134]/20 blur-3xl" />
-
-        <div className="container relative mx-auto max-w-4xl px-4 text-center">
+      {/* ── HERO SECTION ──────────────────────────────────────────────── */}
+      <section className="relative py-16 sm:py-24 px-4 text-center">
+        <div className="container mx-auto max-w-4xl relative z-10">
           {/* Badge */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#F2B134]/30 bg-[#F2B134]/10 px-4 py-1.5 text-xs sm:text-sm font-semibold text-[#F2B134] backdrop-blur">
-            <Sparkles className="h-4 w-4" />
-            <span>{isAr ? 'أكاديمية الفيزياء والرياضيات — م. عمرو حاتم' : 'Physics & Mathematics Academy — Eng. Amr Hatem'}</span>
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 dark:bg-amber-500/20 px-4 py-1.5 text-xs sm:text-sm font-bold text-amber-700 dark:text-amber-400 backdrop-blur">
+            <Sparkles className="h-4 w-4 text-amber-500" />
+            <span>{isAr ? 'أكاديمية الفيزياء والرياضيات — المهندس عمرو حاتم' : 'Physics & Math Academy — Eng. Amr Hatem'}</span>
           </div>
 
-          <h1 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl text-white">
+          <h1 className="mb-6 text-3xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight text-foreground">
             {isAr ? (
               <>
-                <span>تأسيس وفهم وتفوق دراسي مع</span>
+                <span>الفيزياء مش حفظ وتسميع..</span>
                 <br />
-                <span className="bg-gradient-to-r from-[#F2B134] via-[#FCE38A] to-[#14A3A3] bg-clip-text text-transparent">
-                  م. عمرو حاتم
+                <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-teal-500 bg-clip-text text-transparent">
+                  الفيزياء فهم وتريكات هتوصلك للـ ٦٠/٦٠!
                 </span>
               </>
             ) : (
               <>
-                <span>Empowering Excellence with</span>
+                <span>Master Physics & Math with</span>
                 <br />
-                <span className="bg-gradient-to-r from-[#F2B134] via-[#FCE38A] to-[#14A3A3] bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-teal-500 bg-clip-text text-transparent">
                   Eng. Amr Hatem
                 </span>
               </>
             )}
           </h1>
 
-          <p className="mx-auto mb-10 max-w-2xl text-base sm:text-lg text-slate-200/90 leading-relaxed">
+          <p className="mx-auto mb-8 max-w-2xl text-base sm:text-lg text-muted-foreground leading-relaxed">
             {isAr
-              ? 'المنظومة التعليمية الرقمية المتكاملة لمتابعة الحصص، بنك الأسئلة، الامتحانات الإلكترونية، ونسب الحضور بدقة واحترافية.'
-              : 'A complete academic platform for interactive physics & math learning, auto-graded exams, attendance, and instant progress reports.'}
+              ? 'مع البشمهندس عمرو حاتم، هتبدأ من تأسيس المفاهيم والقوانين من الصفر، لحد حل أعقد أفكار امتحانات الثانوية العامة بثقة وهدوء وبدون أي تعقيد.'
+              : 'From core fundamentals to mastering the toughest exam problems, step by step with clear explanations, continuous tracking, and direct teacher follow-up.'}
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row mb-10">
             <Link
               href={`/${locale}/apply`}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-xl bg-[#F2B134] px-7 py-3.5 text-sm sm:text-base font-bold text-[#0F2A4A] shadow-lg shadow-[#F2B134]/20 transition-all hover:bg-[#F2B134]/90 hover:scale-[1.02]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#F2B134] px-8 py-3.5 text-base font-black text-[#0F2A4A] shadow-lg shadow-amber-500/20 hover:bg-[#F2B134]/90 transition-all hover:scale-105"
             >
               <Sparkles className="h-4 w-4" />
-              <span>{isAr ? 'التحق بالأكاديمية الآن' : 'Apply For Admission'}</span>
+              <span>{isAr ? 'احجز مكانك في المجموعات' : 'Enroll Now'}</span>
             </Link>
+
             <Link
               href={`/${locale}/login`}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3.5 text-sm sm:text-base font-semibold text-white backdrop-blur transition-all hover:bg-white/20 hover:border-white/40"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-7 py-3.5 text-base font-bold text-foreground transition-all hover:bg-muted"
             >
               <Users className="h-4 w-4" />
-              <span>{isAr ? 'دخول بوابة المنصة' : 'Portal Sign In'}</span>
+              <span>{isAr ? 'دخول منصة الطالب' : 'Student Portal'}</span>
             </Link>
+
             <a
-              href="https://wa.me/201012006316?text=مرحبا%20أستاذ%20عمرو%20أريد%20الاشتراك%20في%20الأكاديمية"
+              href="https://wa.me/201012006316?text=السلام%20عليكم%20مهندس%20عمرو%20أريد%20الاستفسار%20عن%20مواعيد%20الحصص"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/20 px-6 py-3.5 text-sm sm:text-base font-semibold text-emerald-300 backdrop-blur transition-all hover:bg-emerald-500/30"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-3.5 text-base font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-all"
             >
               <Phone className="h-4 w-4" />
-              <span>{isAr ? 'واتساب مباشر' : 'WhatsApp'}</span>
+              <span>{isAr ? 'تواصل واتساب' : 'WhatsApp'}</span>
             </a>
           </div>
-        </div>
-      </section>
 
-      {/* ── STATS BAR ──────────────────────────────────────────────────────── */}
-      <section className="border-y border-border bg-muted/40">
-        <div className="container mx-auto max-w-4xl px-4 py-8">
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-            {stats.map((s) => (
-              <div key={s.labelEn} className="text-center">
-                <p className="text-2xl sm:text-3xl font-black text-foreground">{isAr ? s.numAr : s.numEn}</p>
-                <p className="mt-1 text-xs font-semibold text-muted-foreground">
-                  {isAr ? s.labelAr : s.labelEn}
-                </p>
-              </div>
-            ))}
+          {/* Humorous Human Newton Box 🍎 */}
+          <div className="max-w-xl mx-auto rounded-2xl border border-amber-300/60 dark:border-amber-800/40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-4 text-start flex items-center gap-3 shadow-sm">
+            <span className="text-3xl animate-bounce-apple select-none shrink-0">🍎</span>
+            <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed font-medium">
+              {isAr
+                ? '«التفاحة لما وقعت على نيوتن عملتلنا منهج.. بس مع م. عمرو كل مسألة صعبة ليها قصة وتجربة وتريكة فيزيائية هتثبت في دماغك!»'
+                : 'Physics is not about memorization — it is the art of understanding how our universe and equations work!'}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* ── FEATURES GRID ──────────────────────────────────────────────────── */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto max-w-5xl px-4">
-          <div className="mb-12 text-center">
-            <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
-              {isAr ? 'مميزات المنظومة التعليمية' : 'Platform Features'}
+      {/* ── STATS BAR ─────────────────────────────────────────────────── */}
+      <section className="border-y border-border bg-muted/30 py-8">
+        <div className="container mx-auto max-w-4xl px-4 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
+          <div>
+            <p className="text-2xl sm:text-3xl font-black text-amber-500">+٥٠٠</p>
+            <p className="text-xs font-semibold text-muted-foreground mt-1">{isAr ? 'طالب وطالبة متفوقين' : 'Active Students'}</p>
+          </div>
+          <div>
+            <p className="text-2xl sm:text-3xl font-black text-teal-600 dark:text-teal-400">٩٨٪</p>
+            <p className="text-xs font-semibold text-muted-foreground mt-1">{isAr ? 'نسبة اجتياز وتفوق' : 'Pass & High Marks'}</p>
+          </div>
+          <div>
+            <p className="text-2xl sm:text-3xl font-black text-amber-500">+٢٠٠</p>
+            <p className="text-xs font-semibold text-muted-foreground mt-1">{isAr ? 'سؤال ببنك الأسئلة' : 'Curated Questions'}</p>
+          </div>
+          <div>
+            <p className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">+١٠</p>
+            <p className="text-xs font-semibold text-muted-foreground mt-1">{isAr ? 'سنوات خبرة وتدريس' : 'Years Experience'}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── YOUTUBE GALLERY (REAL 5 VIDEOS) ───────────────────────────── */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-bold mb-2">
+              <Youtube className="h-4 w-4" />
+              <span>{isAr ? 'شروحات وحل مسائل مجانية' : 'Free Video Lessons'}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-foreground">
+              {isAr ? 'فيديوهات شرح مميزة مع م. عمرو حاتم' : 'Featured Video Lessons'}
             </h2>
-            <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-xl mx-auto">
-              {isAr
-                ? 'كل ما يحتاجه الطالب وولي الأمر في منصة واحدة سهلة وسريعة الاستخدام من الهاتف والكمبيوتر.'
-                : 'Everything students and parents need in one intuitive, mobile-first academic platform.'}
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              {isAr ? 'شاهد نماذج من شرح الدروس وحل المسائل المتقدمة على قناتنا' : 'Watch concept breakdowns and problem-solving sessions'}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <div
-                key={f.titleEn}
-                className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
-              >
-                <div className={`mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl ${f.color} shadow-sm`}>
-                  <f.icon className="h-5 w-5" />
-                </div>
-                <h3 className="mb-2 text-base font-bold text-foreground">
-                  {isAr ? f.titleAr : f.titleEn}
-                </h3>
-                <p className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
-                  {isAr ? f.descAr : f.descEn}
-                </p>
-              </div>
-            ))}
-          </div>
+          <YouTubeGallery locale={locale} />
         </div>
       </section>
 
-      {/* ── TEACHER PROFILE + YOUTUBE SECTION ─────────────────────────────────── */}
-      <section className="bg-gradient-to-br from-[#07172B] via-[#0F2A4A] to-[#0A1829] py-20 text-white relative overflow-hidden">
-        <div className="container mx-auto max-w-5xl px-4 relative z-10">
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-            
-            {/* Left: Teacher Info */}
-            <div className="space-y-6">
-              <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[#F2B134]">
-                  {isAr ? 'عن المعلم' : 'About The Teacher'}
-                </p>
-                <h2 className="text-3xl sm:text-4xl font-extrabold">
-                  {isAr ? 'م. عمرو حاتم' : 'Eng. Amr Hatem'}
-                </h2>
-                <p className="mt-3 text-sm sm:text-base text-slate-200/90 leading-relaxed">
-                  {isAr
-                    ? 'مهندس ومعلم متخصص في الفيزياء والرياضيات، يجمع بين الفهم العملي التطبيقي للمفاهيم الرياضية والفيزيائية وتبسيط المسائل الصعبة لضمان أعلى الدرجات.'
-                    : 'Specialized Engineer & Educator in Physics and Mathematics, dedicated to conceptual mastery and exam excellence.'}
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <a
-                  href="tel:+201012006316"
-                  className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs sm:text-sm transition-colors hover:bg-white/10"
-                >
-                  <Phone className="h-4 w-4 text-[#14A3A3]" />
-                  <span className="font-mono text-sm font-semibold" dir="ltr">+20 101 200 6316</span>
-                </a>
-                <a
-                  href="https://wa.me/201012006316"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs sm:text-sm text-emerald-300 transition-colors hover:bg-emerald-500/20"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span className="font-semibold">WhatsApp: +20 101 200 6316</span>
-                </a>
-                <a
-                  href="https://www.youtube.com/@Eng.AmrHatem"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs sm:text-sm text-red-300 transition-colors hover:bg-red-500/20"
-                >
-                  <Youtube className="h-4 w-4" />
-                  <span className="font-semibold">YouTube: @Eng.AmrHatem</span>
-                </a>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <a
-                  href="https://wa.me/201012006316?text=مرحبا%20أستاذ%20عمرو%20أريد%20الاشتراك"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 rounded-xl bg-[#F2B134] px-6 py-3 text-center text-xs sm:text-sm font-bold text-[#0F2A4A] transition-colors hover:bg-[#F2B134]/90"
-                >
-                  {isAr ? 'اشترك الآن' : 'Enroll Now'}
-                </a>
-                <Link
-                  href={`/${locale}/login`}
-                  className="flex-1 rounded-xl border border-white/30 px-6 py-3 text-center text-xs sm:text-sm font-semibold text-white transition-colors hover:bg-white/10"
-                >
-                  {isAr ? 'دخول الطلاب' : 'Student Login'}
-                </Link>
-              </div>
-            </div>
-
-            {/* Right: YouTube QR & Channel Card */}
-            <div className="flex justify-center">
-              <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-white/5 p-6 sm:p-8 backdrop-blur-md shadow-2xl text-center">
-                <div className="mb-4 flex items-center justify-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-600 text-white shadow-md">
-                    <Youtube className="h-5 w-5" />
-                  </div>
-                  <div className="text-start">
-                    <p className="font-bold text-white text-sm">قناة اليوتيوب الرسمية</p>
-                    <p className="text-xs text-white/70">@Eng.AmrHatem</p>
-                  </div>
-                </div>
-
-                {/* QR code */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fwww.youtube.com%2F%40Eng.AmrHatem&bgcolor=ffffff&color=0F2A4A&margin=10"
-                  alt="QR Code for Eng. Amr Hatem YouTube Channel"
-                  width={200}
-                  height={200}
-                  className="mx-auto rounded-2xl shadow-inner border border-white/10"
-                />
-
-                <p className="mt-4 text-xs sm:text-sm text-slate-200">
-                  {isAr ? 'امسح الكود لمشاهدة الشروحات المجانية' : 'Scan to watch free physics & math lectures'}
-                </p>
-
-                <div className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-full bg-red-600/20 px-3.5 py-1 border border-red-500/30">
-                  <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                  <span className="text-xs font-semibold text-red-300">
-                    {isAr ? 'محاضرات وتدريبات مجانية' : 'Free on YouTube'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── YouTube Video Player & Filter Gallery ── */}
-          <div className="mt-16 pt-12 border-t border-white/10 space-y-6">
-            <div className="text-center max-w-2xl mx-auto space-y-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600/20 px-3.5 py-1 text-xs font-bold text-red-300 border border-red-500/30">
-                <Youtube className="h-3.5 w-3.5" />
-                <span>{isAr ? 'فيديوهات الشروحات وحل المسائل' : 'Lecture Videos & Problem Solving'}</span>
-              </span>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-white">
-                {isAr ? 'مكتبة شروحات م. عمرو حاتم على يوتيوب' : 'Physics & Math Lecture Library'}
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-300">
-                {isAr ? 'شاهد باقة مختارة من أقوى الشروحات وحلول مسائل الامتحانات مجاناً' : 'Select lectures and tricky exam problem explanations on YouTube'}
-              </p>
-            </div>
-
-            <YouTubeGallery locale={locale} />
-          </div>
-        </div>
-      </section>
-
-      {/* ── HALL OF FAME PREVIEW ────────────────────────────────────────────── */}
-      <section className="py-20 bg-muted/30 border-y border-border">
-        <div className="container mx-auto max-w-5xl px-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-4">
+      {/* ── REAL STUDENTS HALL OF FAME PREVIEW ─────────────────────────── */}
+      <section className="py-16 px-4 bg-muted/20 border-y border-border">
+        <div className="container mx-auto max-w-5xl">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
             <div>
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#F2B134]/15 px-3 py-1 text-xs font-bold text-[#F2B134] mb-2 border border-[#F2B134]/30">
-                <Trophy className="h-3.5 w-3.5" />
-                <span>{isAr ? 'لوحة الشرف' : 'Hall of Fame'}</span>
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-500 mb-1">
+                <Trophy className="h-4 w-4" />
+                <span>{isAr ? 'لوحة الشرف والتكريم' : 'Hall of Fame'}</span>
               </div>
-              <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
-                {isAr ? 'أوائل ومتفوقي الأكاديمية' : 'Academy Top Achievers'}
+              <h2 className="text-2xl sm:text-3xl font-black text-foreground">
+                {isAr ? 'أبطال ومتفوقو الأكاديمية' : 'Academy Honor Roll'}
               </h2>
-              <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
-                {isAr ? 'نماذج مشرفة من طلابنا الحاصلين على أعلى الدرجات والدرجة النهائية' : 'Celebrating our highest scoring students in Physics and Mathematics'}
-              </p>
             </div>
             <Link
               href={`/${locale}/hall-of-fame`}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground px-5 py-2.5 text-xs sm:text-sm font-semibold shadow hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-primary hover:underline"
             >
               <span>{isAr ? 'عرض لوحة الشرف كاملة' : 'View Full Hall of Fame'}</span>
-              <Arrow className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4 rtl:rotate-0 ltr:rotate-180" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {[
-              {
-                rank: 1,
-                nameAr: 'زياد عمرو الشافعي',
-                nameEn: 'Ziad Amr El-Shafei',
-                score: '60 / 60 (100%)',
-                badgeAr: 'الدرجة النهائية فيزياء ثانوية عامة',
-                badgeEn: '100% Full Mark in Physics',
-                gradeAr: '٣ ثانوي',
-                gradeEn: 'Sec 3',
-              },
-              {
-                rank: 2,
-                nameAr: 'مريم محمود عبد الله',
-                nameEn: 'Mariam Mahmoud',
-                score: '118 / 120 (98.3%)',
-                badgeAr: 'تفوق استثنائي رياضيات بحتة وتطبيقية',
-                badgeEn: 'Exceptional in Pure & Applied Math',
-                gradeAr: '٣ ثانوي',
-                gradeEn: 'Sec 3',
-              },
-              {
-                rank: 3,
-                nameAr: 'عمر خالد الديب',
-                nameEn: 'Omar Khaled',
-                score: '99.2%',
-                badgeAr: 'المركز الأول في الفيزياء والرياضيات',
-                badgeEn: 'Top of Group in Physics & Math',
-                gradeAr: '٣ ثانوي',
-                gradeEn: 'Sec 3',
-              },
-            ].map((s) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {realHonorNames.map((st, i) => (
               <div
-                key={s.nameEn}
-                className="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-3 relative overflow-hidden"
+                key={st.code + i}
+                className="rounded-2xl border border-border bg-card p-5 text-center shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`h-8 w-8 rounded-xl flex items-center justify-center font-black text-xs ${
-                      s.rank === 1
-                        ? 'bg-[#F2B134] text-[#0F2A4A]'
-                        : s.rank === 2
-                        ? 'bg-slate-300 text-slate-800'
-                        : 'bg-amber-700 text-white'
-                    }`}
-                  >
-                    #{s.rank}
-                  </span>
-                  <span className="text-xs font-semibold text-primary">{isAr ? s.gradeAr : s.gradeEn}</span>
+                <div className="h-12 w-12 rounded-full mx-auto mb-3 flex items-center justify-center font-bold text-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-300 dark:border-amber-800">
+                  {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '⭐'}
                 </div>
-                <div>
-                  <h3 className="font-bold text-foreground text-base">{isAr ? s.nameAr : s.nameEn}</h3>
-                  <p className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-1">{s.score}</p>
-                </div>
-                <p className="text-xs text-muted-foreground border-t border-border pt-2 leading-relaxed">
-                  🏆 {isAr ? s.badgeAr : s.badgeEn}
-                </p>
+                <h3 className="font-bold text-base text-foreground mb-1">{st.name}</h3>
+                <p className="text-xs font-mono font-bold text-emerald-600 mb-1">{st.score}</p>
+                <p className="text-[11px] text-muted-foreground">كود الطالب: {st.code}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── GROUPS & SCHEDULE ──────────────────────────────────────────────── */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto max-w-5xl px-4">
+      {/* ── WHAT MAKES THE ACADEMY UNIQUE ─────────────────────────────── */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto max-w-5xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
-              {isAr ? 'المجموعات والمواعيد الدراسية' : 'Academic Groups & Schedules'}
+            <h2 className="text-2xl sm:text-3xl font-black text-foreground">
+              {isAr ? 'ليه تدرس فيزياء ورياضيات مع م. عمرو حاتم؟' : 'Why Study With Eng. Amr Hatem?'}
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-muted-foreground max-w-lg mx-auto">
-              {isAr ? 'مواعيد منتظمة ومجموعات محدودة العدد لضمان أقصى درجات الفهم والمتابعة الشخصية' : 'Regular weekly sessions with limited class sizes for maximum engagement'}
+            <p className="text-sm text-muted-foreground mt-2 max-w-xl mx-auto">
+              {isAr ? 'منظومة تعليمية تجمع بين الشرح العميق والمتابعة الصارمة والتكنولوجيا السريعة' : 'Comprehensive academic care, deep concepts, and instant digital progress tracking.'}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-4">
-              <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-                {isAr ? 'الصف الأول الثانوي' : '1st Secondary (Sec 1)'}
-              </div>
-              <h3 className="font-bold text-lg text-foreground">
-                {isAr ? 'أساسيات الفيزياء والرياضيات' : 'Physics & Math Fundamentals'}
-              </h3>
-              <ul className="space-y-2 text-xs text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <Clock className="h-3.5 w-3.5 text-primary" />
-                  <span>{isAr ? 'السبت والثلاثاء ٤:٠٠ م (فيزياء)' : 'Sat & Tue 4:00 PM (Physics)'}</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Clock className="h-3.5 w-3.5 text-secondary" />
-                  <span>{isAr ? 'الأحد والأربعاء ٤:٠٠ م (رياضيات)' : 'Sun & Wed 4:00 PM (Math)'}</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span>{isAr ? 'السنتر + بث أونلاين مباشر' : 'Center + Live Stream'}</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="rounded-2xl border border-secondary/40 bg-card p-6 shadow-sm space-y-4">
-              <div className="inline-block rounded-lg bg-secondary/10 px-3 py-1 text-xs font-bold text-secondary">
-                {isAr ? 'الصف الثاني الثانوي' : '2nd Secondary (Sec 2)'}
-              </div>
-              <h3 className="font-bold text-lg text-foreground">
-                {isAr ? 'الفيزياء والميكانيكا والتفاضل' : 'Physics, Mechanics & Calculus'}
-              </h3>
-              <ul className="space-y-2 text-xs text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <Clock className="h-3.5 w-3.5 text-primary" />
-                  <span>{isAr ? 'السبت والثلاثاء ٦:٠٠ م (فيزياء)' : 'Sat & Tue 6:00 PM (Physics)'}</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Clock className="h-3.5 w-3.5 text-secondary" />
-                  <span>{isAr ? 'الأحد والأربعاء ٦:٠٠ م (رياضيات)' : 'Sun & Wed 6:00 PM (Math)'}</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span>{isAr ? 'السنتر + تسجيلات منصة كاملة' : 'Center + Full Recordings'}</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="rounded-2xl border border-[#F2B134]/50 bg-gradient-to-b from-[#F2B134]/5 to-card p-6 shadow-sm space-y-4">
-              <div className="inline-block rounded-lg bg-[#F2B134]/20 px-3 py-1 text-xs font-bold text-[#0F2A4A] dark:text-[#F2B134]">
-                {isAr ? 'الصف الثالث الثانوي' : '3rd Secondary (Thanaweya)'}
-              </div>
-              <h3 className="font-bold text-lg text-foreground">
-                {isAr ? 'ثانوية عامة — البرنامج المكثف' : 'Thanaweya Amma Intensive'}
-              </h3>
-              <ul className="space-y-2 text-xs text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <Clock className="h-3.5 w-3.5 text-primary" />
-                  <span>{isAr ? 'الأحد والأربعاء ٧:٣٠ م (فيزياء)' : 'Sun & Wed 7:30 PM (Physics)'}</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Clock className="h-3.5 w-3.5 text-secondary" />
-                  <span>{isAr ? 'الاثنين والخميس ٦:٠٠ م (تفاضل وجبر)' : 'Mon & Thu 6:00 PM (Math)'}</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span>{isAr ? 'امتحان أسبوعي بالباركود + مذكرات' : 'Weekly QR exam + Booklets'}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── TESTIMONIALS ────────────────────────────────────────────────────── */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto max-w-4xl px-4">
-          <h2 className="mb-10 text-center text-3xl font-extrabold tracking-tight text-foreground">
-            {isAr ? 'آراء وتجارب طلابنا' : 'What Our Students Say'}
-          </h2>
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                nameEn: 'Ahmed Mohamed', nameAr: 'أحمد محمد',
-                textEn: 'Eng. Amr explains complex physics problems so easily. My grade jumped from 65% to 96%!',
-                textAr: 'م. عمرو بيشرح أصعب مسائل الفيزياء بأسهل طريقة. درجاتي ارتفعت بشكل كبير بفضل الله ثم متابعته الدقيقة.',
-                stars: 5,
+                icon: BookOpen,
+                titleAr: 'تأسيس وبناء علمي حقيقي',
+                descAr: 'القانون لا يُحفظ فقط؛ بل نفهم أصله وتطبيقه العملي وتفاصيل استنتاجه لتكون جاهزاً لأي سؤال غير تقليدي.',
+                color: 'text-amber-500 bg-amber-500/10',
               },
               {
-                nameEn: 'Sara Khaled', nameAr: 'سارة خالد',
-                textEn: 'The student portal is so helpful. I can take practice exams and review questions on my phone.',
-                textAr: 'المنصة ممتازة جداً، سهلة الاستخدام من الموبايل وبتابع عليها كل الامتحانات والواجبات أولاً بأول.',
-                stars: 5,
+                icon: BarChart3,
+                titleAr: 'بنك أسئلة وتدريب مستمر',
+                descAr: 'مئات الأسئلة المتدرجة من البسيط حتى مسائل المستويات العليا المتطابقة مع نظام امتحانات الثانوية العامة الجديد.',
+                color: 'text-teal-600 bg-teal-500/10',
               },
               {
-                nameEn: 'Omar Tarek', nameAr: 'عمر طارق',
-                textEn: 'The QR attendance and leaderboard make studying interactive and motivating every single week!',
-                textAr: 'نظام الحضور بالباركود ولوحة الشرف بيخلقوا روح منافسة وتفوق بين كل الطلاب في المجموعة.',
-                stars: 5,
+                icon: Zap,
+                titleAr: 'حضور ذكي بالباركود (QR)',
+                descAr: 'تسجيل حضور فوري بكارنيه الطالب الذكي، لضمان عدم إضاعة أي دقيقة من وقت الشرح والحل.',
+                color: 'text-orange-500 bg-orange-500/10',
               },
-            ].map((t) => (
-              <div
-                key={t.nameEn}
-                className="rounded-2xl border border-border bg-card p-6 shadow-sm"
-              >
-                <div className="mb-3 flex gap-0.5">
-                  {Array.from({ length: t.stars }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-[#F2B134] text-[#F2B134]" />
-                  ))}
+              {
+                icon: MessageSquare,
+                titleAr: 'تقارير أسبوعية لأولياء الأمور',
+                descAr: 'رسائل دورية على واتساب توضح درجات الامتحانات والواجبات ونسبة الحضور ليكون ولي الأمر مطمئناً دائماً.',
+                color: 'text-emerald-600 bg-emerald-500/10',
+              },
+              {
+                icon: Award,
+                titleAr: 'شهادات تقدير وتكريم المتفوقين',
+                descAr: 'تكريم شهري للمتصدرين مع شهادات تقدير موثقة برمز QR رقمي لتشجيع الطلاب على الاستمرار في القمة.',
+                color: 'text-amber-500 bg-amber-500/10',
+              },
+              {
+                icon: Phone,
+                titleAr: 'دعم مباشر وإجابة استفساراتك',
+                descAr: 'خط اتصال وواتساب مباشر لمتابعة أي مسألة تقف أمامك وتوضيح خطوات الحل خطوة بخطوة.',
+                color: 'text-blue-500 bg-blue-500/10',
+              },
+            ].map((card, i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className={`h-11 w-11 rounded-xl flex items-center justify-center mb-4 ${card.color}`}>
+                  <card.icon className="h-5 w-5" />
                 </div>
-                <p className="mb-4 text-xs sm:text-sm leading-relaxed text-muted-foreground">
-                  &ldquo;{isAr ? t.textAr : t.textEn}&rdquo;
-                </p>
-                <p className="text-xs sm:text-sm font-bold text-foreground">
-                  — {isAr ? t.nameAr : t.nameEn}
-                </p>
+                <h3 className="font-bold text-base text-foreground mb-2">{card.titleAr}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{card.descAr}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── FAQ SECTION ──────────────────────────────────────────────────────── */}
-      <section className="py-20 bg-muted/20 border-t border-border">
-        <div className="container mx-auto max-w-3xl px-4">
+      {/* ── GROUPS & STAGES ────────────────────────────────────────────── */}
+      <section className="py-16 px-4 bg-muted/20 border-t border-border">
+        <div className="container mx-auto max-w-4xl text-center">
+          <h2 className="text-2xl sm:text-3xl font-black mb-3">
+            {isAr ? 'المراحل الدراسية والمناهج المتاحة' : 'Available Academic Stages'}
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-8">
+            {isAr ? 'شرح وافٍ وتدريبات مكثفة للثانوية العامة ومدارس اللغات' : 'Curriculums for Thanaweya Amma and Language Schools'}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-start">
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+              <span className="text-xs font-bold text-amber-500 block mb-1">الصف الأول الثانوي</span>
+              <h3 className="font-bold text-lg mb-2">فيزياء ومبادئ الرياضيات</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                تأسيس قوي في معادلات الحركة وقوانين نيوتن والمتجهات وحساب المثلثات.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+              <span className="text-xs font-bold text-teal-600 block mb-1">الصف الثاني الثانوي</span>
+              <h3 className="font-bold text-lg mb-2">الحركة الموجية والضوء والتفاضل</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                دراسة متعمقة للموجات، الانعكاس والانكسار، وقواعد التفاضل وحساب المثلثات.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border-2 border-amber-500 bg-card p-6 shadow-md relative">
+              <span className="absolute -top-3 start-6 px-3 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-black uppercase">
+                الأكثر طلباً
+              </span>
+              <span className="text-xs font-bold text-amber-500 block mb-1">الصف الثالث الثانوي</span>
+              <h3 className="font-bold text-lg mb-2">الفيزياء والرياضيات للثانوية العامة</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                الكهربية والمغناطيسية، أجهزة القياس، والفيزياء الحديثة، بالإضافة للتفاضل والتكامل والاستاتيكا.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ SECTION ────────────────────────────────────────────────── */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-3xl">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
-              {isAr ? 'الأسئلة الشائعة' : 'Frequently Asked Questions'}
+            <h2 className="text-2xl sm:text-3xl font-black text-foreground">
+              {isAr ? 'الأسئلة الشائعة وإجاباتها' : 'Frequently Asked Questions'}
             </h2>
-            <p className="mt-2 text-xs sm:text-sm text-muted-foreground">
-              {isAr ? 'كل ما تود معرفته عن نظام الدراسة والمتابعة والامتحانات' : 'Everything you need to know about enrollment and our system'}
-            </p>
           </div>
 
           <div className="space-y-4">
             {[
               {
-                qAr: 'كيف يتم تصحيح الواجبات ومتابعة مستوى الطالب؟',
-                qEn: 'How are homework assignments and student progress monitored?',
-                aAr: 'يتم تسليم الواجبات ورقياً بالسنتر أو إلكترونياً عبر المنصة وتصحيحها بدقة، وتصدر تقارير درجات دورية لأولياء الأمور عبر واتساب.',
-                aEn: 'Assignments are submitted physically or through the student portal, graded rigorously, and weekly progress reports are sent to parents.',
+                q: 'إزاي أحجز مكان مع المهندس عمرو حاتم؟',
+                a: 'تقدر تضغط على زر "احجز مكانك" وتسجل بياناتك في ثوانٍ، أو تتواصل مباشرة عبر واتساب على رقم +201012006316 وسيقوم فريق العمل بتأكيد المجموعة المناسبة لك.',
               },
               {
-                qAr: 'هل يتوفر اشتراك أونلاين للطلاب من خارج القاهرة والمحافظات؟',
-                qEn: 'Is online enrollment available for students outside Cairo?',
-                aAr: 'نعم، المنصة مجهزة بالكامل بالحصص المسجلة، البث المباشر، بنك الأسئلة، والامتحانات المؤقتة مع متابعة شخصية مستمرة.',
-                aEn: 'Yes! The portal provides recorded lectures, live sessions, interactive question banks, and timed online exams with dedicated support.',
+                q: 'هل المنصة بتتابع غياب ودرجات الطالب؟',
+                a: 'نعم، المنصة بتوفر كود QR لكل طالب لتسجيل الحضور، وكل امتحان أو واجب بيتم تصحيحه وتسجيل درجاته وإرسال تقرير فوري لولي الأمر.',
               },
               {
-                qAr: 'ما هي مميزات كارنيه الطالب الذكي المزود بالباركود؟',
-                qEn: 'What are the benefits of the Smart Student ID Card?',
-                aAr: 'يتيح تسجيل الحضور في ثوانٍ معدودة، ويمنع أي غياب مفاجئ دون علم ولي الأمر، مع ربط مباشر برصيد الحصص والدرجات.',
-                aEn: 'Instant attendance scan at the door, automated absence alerts to parents, and quick identification for exams and booklets.',
+                q: 'هل الشرح متوفر لمدارس اللغات (Physics & Math)؟',
+                a: 'نعم، المناهج مشروحة لكلا القسمين (عربي ولغات) مع التركيز على المصطلحات العلمية باللغة الإنجليزية وحل الامتحانات الوزارية والتجريبية.',
               },
               {
-                qAr: 'كيف يمكنني التقدم وحجز مقعد في المجموعات؟',
-                qEn: 'How can I apply and reserve a seat in the groups?',
-                aAr: 'يمكنك ملء استمارة التقديم من زر "التحق بنا" بالأعلى، أو التواصل الفوري عبر واتساب على الرقم 01012006316 وسيقوم فريق العمل بتأكيد حجزك.',
-                aEn: 'Click "Apply Now" to submit your application or message us directly on WhatsApp at +20 101 200 6316 to reserve your seat.',
+                q: 'لو فاتني درس أو حصة، هل فيه مراجعة أو تسجيل؟',
+                a: 'توفر الأكاديمية ملخصات وشروحات مسجلة وبنك أسئلة إلكتروني يتيح للطالب مراجعة وحل أي جزء فاته في أي وقت.',
               },
             ].map((faq, i) => (
-              <div key={i} className="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-2">
-                <h3 className="font-bold text-foreground text-sm sm:text-base flex items-center gap-2">
-                  <HelpCircle className="h-4 w-4 text-primary shrink-0" />
-                  <span>{isAr ? faq.qAr : faq.qEn}</span>
-                </h3>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed ps-6">
-                  {isAr ? faq.aAr : faq.aEn}
+              <details key={i} className="rounded-xl border border-border bg-card p-4 text-start cursor-pointer group">
+                <summary className="font-bold text-sm text-foreground list-none flex items-center justify-between">
+                  <span>{faq.q}</span>
+                  <span className="text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-3 leading-relaxed pt-2 border-t border-border">
+                  {faq.a}
                 </p>
-              </div>
+              </details>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── FINAL CTA ────────────────────────────────────────────────────────── */}
-      <section className="bg-gradient-to-r from-[#07172B] via-[#0F2A4A] to-[#14A3A3] py-16 text-white">
-        <div className="container mx-auto max-w-3xl px-4 text-center">
-          <h2 className="mb-4 text-3xl font-black">
-            {isAr ? 'جاهز للتفوق في الفيزياء والرياضيات؟' : 'Ready to Excel in Physics & Mathematics?'}
-          </h2>
-          <p className="mb-8 text-sm sm:text-base text-slate-200/90 max-w-lg mx-auto">
-            {isAr
-              ? 'تواصل معنا الآن عبر واتساب واشترك في أقوى المجموعات الدراسية مع م. عمرو حاتم.'
-              : 'Contact us now on WhatsApp to join our groups with Eng. Amr Hatem.'}
+      {/* ── FLOATING WHATSAPP BUTTON ──────────────────────────────────── */}
+      <aside aria-label="تواصل واتساب" className="fixed bottom-6 end-6 z-50">
+        <a
+          href="https://wa.me/201012006316?text=السلام%20عليكم%20مهندس%20عمرو%20حاتم"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-3 text-white font-bold text-xs sm:text-sm shadow-xl hover:bg-emerald-600 hover:scale-105 transition-all"
+        >
+          <Phone className="h-5 w-5" />
+          <span>{isAr ? 'تواصل مع م. عمرو' : 'Chat with Eng. Amr'}</span>
+        </a>
+      </aside>
+
+      {/* ── FOOTER ────────────────────────────────────────────────────── */}
+      <footer className="border-t border-border bg-muted/40 py-10 px-4 text-center">
+        <div className="container mx-auto max-w-4xl space-y-4">
+          <Image
+            src="/logo.svg"
+            alt="Amr Hatem Academy"
+            width={160}
+            height={46}
+            className="h-8 w-auto mx-auto object-contain dark:brightness-0 dark:invert"
+          />
+          <p className="text-xs text-muted-foreground max-w-md mx-auto">
+            أكاديمية المهندس عمرو حاتم المتخصصة في تدريس الفيزياء والرياضيات للمرحلة الثانوية.
           </p>
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <a
-              href="https://wa.me/201012006316?text=مرحبا%20أستاذ%20عمرو%20أريد%20الاشتراك"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#F2B134] px-8 py-3.5 text-sm sm:text-base font-bold text-[#0F2A4A] shadow-xl transition-all hover:bg-[#F2B134]/90 hover:scale-[1.02]"
-            >
-              <Phone className="h-4 w-4" />
-              <span>{isAr ? 'واتساب: +201012006316' : 'WhatsApp: +201012006316'}</span>
-            </a>
-            <Link
-              href={`/${locale}/login`}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-8 py-3.5 text-sm sm:text-base font-semibold text-white transition-all hover:bg-white/20"
-            >
-              <Users className="h-4 w-4" />
-              <span>{isAr ? 'دخول البوابة' : 'Portal Sign In'}</span>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FOOTER ──────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-border bg-muted/30 py-8">
-        <div className="container mx-auto max-w-5xl px-4">
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-            <Link href={`/${locale}`} className="flex items-center gap-2">
-              <Image
-                src="/logo.svg"
-                alt="Eng. Amr Hatem Academy"
-                width={180}
-                height={50}
-                className="h-8 w-auto object-contain dark:brightness-0 dark:invert"
-              />
-            </Link>
-
-            <div className="flex items-center gap-4 text-xs sm:text-sm text-muted-foreground">
-              <a href="tel:+201012006316" className="transition-colors hover:text-foreground" dir="ltr">
-                +20 101 200 6316
-              </a>
-              <span>•</span>
-              <a
-                href="https://wa.me/201012006316"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-emerald-600"
-              >
-                WhatsApp
-              </a>
-              <span>•</span>
-              <a
-                href="https://www.youtube.com/@Eng.AmrHatem"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="transition-colors hover:text-red-600"
-              >
-                YouTube
-              </a>
-            </div>
-          </div>
-          <p className="mt-6 text-center text-[11px] text-muted-foreground">
-            © {new Date().getFullYear()} {isAr ? 'أكاديمية م. عمرو حاتم — جميع الحقوق محفوظة' : 'Eng. Amr Hatem Academy — All rights reserved'}
+          <p className="text-xs text-muted-foreground">
+            جميع الحقوق محفوظة © {new Date().getFullYear()} — Eng. Amr Hatem Academy
           </p>
         </div>
       </footer>
-
-      {/* Floating WhatsApp Action Button */}
-      <aside aria-label="WhatsApp Contact" className="fixed bottom-6 end-6 z-40">
-        <a
-          href="https://wa.me/201012006316?text=مرحبا%20م.%20عمرو%20حاتم%20أود%20الاستفسار%20عن%20دروس%20الأكاديمية"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex items-center gap-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white p-3.5 shadow-2xl hover:shadow-emerald-500/40 transition-all duration-300 hover:scale-105"
-          title={isAr ? 'تواصل معنا عبر واتساب' : 'Chat with us on WhatsApp'}
-        >
-          <MessageSquare className="h-6 w-6" />
-          <span className="hidden sm:inline-block text-xs font-bold pe-1">
-            {isAr ? 'تواصل مع م. عمرو' : 'Chat on WhatsApp'}
-          </span>
-        </a>
-      </aside>
     </div>
   )
 }

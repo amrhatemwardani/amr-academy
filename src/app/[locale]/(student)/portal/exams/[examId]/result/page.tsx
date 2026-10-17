@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { MathText } from '@/components/ui/MathText'
 
 const TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   mcq: HelpCircle,
@@ -185,9 +186,9 @@ export default async function ExamResultPage({
                     </div>
 
                     {/* Question Body */}
-                    <p className="font-medium text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
-                      {q.body}
-                    </p>
+                    <div className="font-medium text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
+                      <MathText text={q.body} />
+                    </div>
 
                     {/* Options (MCQ / True False) */}
                     {(q.type === 'mcq' || q.type === 'true_false') && q.options && (
@@ -216,7 +217,7 @@ export default async function ExamResultPage({
                                 ) : (
                                   <span className="h-4 w-4 rounded-full border border-border inline-block shrink-0" />
                                 )}
-                                <span>{opt.body}</span>
+                                <span><MathText text={opt.body} /></span>
                               </div>
 
                               <div className="flex items-center gap-1.5 text-xs font-medium">

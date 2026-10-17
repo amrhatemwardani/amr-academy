@@ -27,6 +27,7 @@ export interface QuestionItem {
   options: { id: string; body: string; is_correct: boolean }[]
   accepted_answers: string[]
   model_answer: string
+  created_at?: string
 }
 
 interface Props {

@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   ClipboardList,
   Clock,
@@ -26,6 +27,7 @@ import {
   Video,
   Camera,
   Play,
+  Eye,
 } from 'lucide-react'
 import { submitAssignmentAction } from './actions'
 
@@ -80,6 +82,7 @@ export function TasksClientView({ locale, tasks, studentId }: Props) {
   const [driveLink, setDriveLink] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState<Record<string, boolean>>({})
+  const [cardWindow, setCardWindow] = useState<{ url: string; title: string } | null>(null)
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }))
 
@@ -277,15 +280,25 @@ export function TasksClientView({ locale, tasks, studentId }: Props) {
                       {isAr ? 'ملف أو مرجع مرفق مع الواجب' : 'Attached Reference / File'}
                     </span>
                   </div>
-                  <a
-                    href={task.resourceLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline px-2.5 py-1 rounded bg-blue-100 dark:bg-blue-900/50"
-                  >
-                    {isAr ? 'فتح الرابط' : 'Open Link'}
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setCardWindow({ url: task.resourceLink!, title: task.title })}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-2.5 py-1 rounded border border-blue-300 dark:border-blue-800 transition-colors"
+                    >
+                      <Eye className="h-3 w-3" />
+                      <span>{isAr ? 'معاينة في نافذة سريعة' : 'Open in Card Window'}</span>
+                    </button>
+                    <a
+                      href={task.resourceLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                      title={isAr ? 'فتح في تبويب خارجي' : 'Open in new tab'}
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
                 </div>
               )}
             </div>
@@ -537,6 +550,41 @@ export function TasksClientView({ locale, tasks, studentId }: Props) {
           </div>
         </div>
       )}
+
+      {/* ── Small Card Window for Assignment Resources ── */}
+      <Dialog open={!!cardWindow} onOpenChange={(o) => { if (!o) setCardWindow(null) }}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] p-0 overflow-hidden flex flex-col bg-background border border-border shadow-2xl">
+          <DialogHeader className="px-5 py-3 border-b border-border bg-muted/40 flex flex-row items-center justify-between">
+            <DialogTitle className="text-sm font-semibold truncate flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary" />
+              <span>{cardWindow?.title}</span>
+            </DialogTitle>
+            {cardWindow?.url && (
+              <a
+                href={cardWindow.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-primary hover:underline inline-flex items-center gap-1 shrink-0 me-6"
+              >
+                <span>{isAr ? 'فتح خارجي' : 'Open External'}</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+          </DialogHeader>
+          <div className="flex-1 min-h-[380px] p-2 bg-slate-100 dark:bg-slate-950 flex flex-col">
+            {cardWindow?.url ? (
+              <iframe
+                src={cardWindow.url.includes('drive.google.com') && !cardWindow.url.includes('/preview')
+                  ? cardWindow.url.replace(/\/view(\?.*)?$/, '/preview')
+                  : cardWindow.url}
+                title={cardWindow.title}
+                className="w-full flex-1 rounded-lg border border-border min-h-[400px] bg-white"
+                sandbox="allow-scripts allow-same-origin allow-popups"
+              />
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
