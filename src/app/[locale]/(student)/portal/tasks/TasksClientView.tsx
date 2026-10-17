@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { useLocale } from 'next-intl'
@@ -23,6 +23,9 @@ import {
   X,
   ExternalLink,
   Download,
+  Video,
+  Camera,
+  Play,
 } from 'lucide-react'
 import { submitAssignmentAction } from './actions'
 
@@ -46,6 +49,7 @@ type Task = {
   dueDate: string | null
   maxScore: number
   submission: Submission | null
+  resourceLink?: string | null
 }
 
 interface Props {
@@ -59,6 +63,13 @@ const TYPE_CONFIG = {
   quiz:       { labelEn: 'Quiz',       labelAr: 'اختبار قصير', icon: FileText,  color: 'from-purple-500 to-violet-600' },
   written:    { labelEn: 'Written',    labelAr: 'تحريري ومقالي', icon: PenLine,   color: 'from-amber-500 to-orange-500' },
   pdf_upload: { labelEn: 'PDF Upload', labelAr: 'رفع ملف PDF',  icon: Upload,    color: 'from-red-500 to-rose-600' },
+}
+
+function getYouTubeId(url?: string | null) {
+  if (!url) return null
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+  const match = url.match(regExp)
+  return match && match[2].length === 11 ? match[2] : null
 }
 
 export function TasksClientView({ locale, tasks, studentId }: Props) {
@@ -229,6 +240,57 @@ export function TasksClientView({ locale, tasks, studentId }: Props) {
             </div>
           )}
 
+          {/* Attached Resource / YouTube Video */}
+          {task.resourceLink && (
+            <div className="mt-3 space-y-2">
+              {getYouTubeId(task.resourceLink) ? (
+                <div className="rounded-xl overflow-hidden border border-border bg-black shadow-sm">
+                  <div className="px-3 py-1.5 bg-muted/80 backdrop-blur flex items-center justify-between text-xs">
+                    <span className="font-semibold text-red-600 flex items-center gap-1.5">
+                      <Video className="h-4 w-4" />
+                      {isAr ? 'فيديو الشرح المرفق من الأستاذ عمرو' : 'Explanation Video by Eng. Amr'}
+                    </span>
+                    <a
+                      href={task.resourceLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      {isAr ? 'فتح في يوتيوب' : 'Open in YouTube'}
+                    </a>
+                  </div>
+                  <div className="relative aspect-video">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${getYouTubeId(task.resourceLink)}`}
+                      title="Assignment explanation video"
+                      className="w-full h-full"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-2.5 rounded-lg border border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-950/20">
+                  <div className="flex items-center gap-2">
+                    <ExternalLink className="h-4 w-4 text-blue-600" />
+                    <span className="text-xs font-medium text-foreground">
+                      {isAr ? 'ملف أو مرجع مرفق مع الواجب' : 'Attached Reference / File'}
+                    </span>
+                  </div>
+                  <a
+                    href={task.resourceLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline px-2.5 py-1 rounded bg-blue-100 dark:bg-blue-900/50"
+                  >
+                    {isAr ? 'فتح الرابط' : 'Open Link'}
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Submission form / toggle */}
           {!alreadySubmitted && (
             <div className="mt-3">
@@ -278,21 +340,36 @@ export function TasksClientView({ locale, tasks, studentId }: Props) {
                         </button>
                       </div>
                     ) : (
-                      <label className="cursor-pointer block">
-                        <Upload className="mx-auto h-7 w-7 text-muted-foreground/60 mb-1" />
-                        <p className="text-xs font-semibold text-foreground">
-                          {isAr ? 'اختر ملف PDF أو صورة حل للواجب' : 'Upload PDF or photo of your work'}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                          {isAr ? 'PDF, PNG, JPG حتى 10 ميجابايت' : 'PDF, PNG, JPG up to 10MB'}
-                        </p>
-                        <input
-                          type="file"
-                          accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
-                          onChange={(e) => handleFileChange(task.id, e)}
-                          className="hidden"
-                        />
-                      </label>
+                      <div className="space-y-2">
+                        <label className="cursor-pointer block py-2">
+                          <Upload className="mx-auto h-7 w-7 text-muted-foreground/60 mb-1" />
+                          <p className="text-xs font-semibold text-foreground">
+                            {isAr ? 'اختر ملف PDF أو صورة حل للواجب' : 'Upload PDF or photo of your work'}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                            {isAr ? 'PDF, PNG, JPG حتى 10 ميجابايت' : 'PDF, PNG, JPG up to 10MB'}
+                          </p>
+                          <input
+                            type="file"
+                            accept=".pdf,image/*,.doc,.docx"
+                            onChange={(e) => handleFileChange(task.id, e)}
+                            className="hidden"
+                          />
+                        </label>
+                        <div className="pt-2 border-t border-border/50 flex justify-center">
+                          <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-medium transition-colors">
+                            <Camera className="h-4 w-4 text-primary" />
+                            <span>{isAr ? 'التقاط صورة بكاميرا الهاتف' : 'Take photo with camera'}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              capture="environment"
+                              onChange={(e) => handleFileChange(task.id, e)}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      </div>
                     )}
                   </div>
 

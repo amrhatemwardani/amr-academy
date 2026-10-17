@@ -24,7 +24,7 @@ export default async function StudentTasksPage({
 
   // Fetch assignments for this student (assigned to them directly OR to their enrolled classes)
   const { data: rawAssignments } = await (admin.from('assignments' as any) as any)
-    .select('id, title, description, type, due_date, max_score, class_id, student_id, classes(name, subject)')
+    .select('id, title, description, resource_link, type, due_date, max_score, class_id, student_id, classes(name, subject)')
     .eq('is_active', true)
     .order('due_date', { ascending: true })
 
@@ -60,6 +60,7 @@ export default async function StudentTasksPage({
     id: a.id,
     title: a.title,
     description: a.description || '',
+    resourceLink: a.resource_link || null,
     type: a.type as string,
     className: a.classes?.name || '',
     classSubject: a.classes?.subject || '',

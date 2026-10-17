@@ -31,6 +31,8 @@ import {
   AlertCircle,
   GraduationCap,
   ExternalLink,
+  Copy,
+  Video,
 } from 'lucide-react'
 import { createAssignmentAction, deleteAssignmentAction, getQuestionsForPickerAction } from './actions'
 
@@ -163,6 +165,27 @@ export function AssignmentsClientView({ locale, assignments, classes, students }
     }
   }
 
+  const handleDuplicate = (a: Assignment) => {
+    setTitle(isAr ? `نسخة - ${a.title}` : `Copy of ${a.title}`)
+    setDescription(a.description || '')
+    setType(a.type)
+    setTargetType(a.studentId ? 'student' : 'class')
+    if (a.classId) setClassId(a.classId)
+    if (a.studentId) setStudentId(a.studentId)
+    setDueDate(a.dueDate ? a.dueDate.slice(0, 16) : '')
+    setMaxScore(String(a.maxScore || 100))
+    setResourceLink(a.resource_link || '')
+    setOpen(true)
+    toast.info(isAr ? 'تم نسخ بيانات الواجب، يمكنك مراجعتها وحفظها' : 'Assignment details copied, adjust and save')
+  }
+
+  function getYouTubeId(url?: string | null) {
+    if (!url) return null
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+    const match = url.match(regExp)
+    return match && match[2].length === 11 ? match[2] : null
+  }
+
   const filteredList = list.filter((a) => {
     if (filterType === 'all') return true
     if (filterType === 'student') return !!a.studentId
@@ -270,16 +293,28 @@ export function AssignmentsClientView({ locale, assignments, classes, students }
                   )}
 
                   {a.resource_link && (
-                    <div className="pt-0.5">
-                      <a
-                        href={a.resource_link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline bg-blue-50 dark:bg-blue-950/40 px-2 py-1 rounded-md border border-blue-200 dark:border-blue-900"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        <span>{isAr ? 'رابط المرجع / درايف' : 'Resource / Drive Link'}</span>
-                      </a>
+                    <div className="pt-0.5 space-y-1.5">
+                      {getYouTubeId(a.resource_link) ? (
+                        <a
+                          href={a.resource_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:underline bg-red-50 dark:bg-red-950/40 px-2 py-1 rounded-md border border-red-200 dark:border-red-900"
+                        >
+                          <Video className="h-3.5 w-3.5 text-red-500" />
+                          <span>{isAr ? 'شرح فيديو على يوتيوب' : 'YouTube Video Lesson'}</span>
+                        </a>
+                      ) : (
+                        <a
+                          href={a.resource_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline bg-blue-50 dark:bg-blue-950/40 px-2 py-1 rounded-md border border-blue-200 dark:border-blue-900"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          <span>{isAr ? 'رابط المرجع / درايف' : 'Resource / Drive Link'}</span>
+                        </a>
+                      )}
                     </div>
                   )}
 
@@ -310,6 +345,15 @@ export function AssignmentsClientView({ locale, assignments, classes, students }
                       {isAr ? 'عرض وتصحيح التسليمات' : 'View & Grade'}
                     </Link>
                     <button
+                      type="button"
+                      onClick={() => handleDuplicate(a)}
+                      className="flex items-center justify-center rounded-lg border border-border bg-muted/40 p-1.5 text-muted-foreground transition-colors hover:text-foreground hover:bg-muted"
+                      title={isAr ? 'تكرار الواجب' : 'Duplicate Assignment'}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => handleDelete(a.id)}
                       className="flex items-center justify-center rounded-lg border border-destructive/30 bg-destructive/5 p-1.5 text-destructive transition-colors hover:bg-destructive/10"
                       title={isAr ? 'حذف' : 'Delete'}
@@ -447,13 +491,29 @@ export function AssignmentsClientView({ locale, assignments, classes, students }
 
             {/* Resource Link (Drive / YouTube / Doc) */}
             <div className="space-y-1.5">
-              <Label>{isAr ? 'رابط ملف أو مرجع (جوجل درايف / يوتيوب - اختياري)' : 'Resource Link (Google Drive / YouTube - Optional)'}</Label>
+              <Label>{isAr ? 'رابط شرح يوتيوب أو ملف درايف (اختياري)' : 'YouTube Explanation or Drive Link (Optional)'}</Label>
               <Input
                 type="url"
                 value={resourceLink}
                 onChange={(e) => setResourceLink(e.target.value)}
-                placeholder="https://drive.google.com/... or https://youtube.com/..."
+                placeholder="https://youtube.com/watch?v=... or https://drive.google.com/..."
               />
+              {getYouTubeId(resourceLink) && (
+                <div className="rounded-lg overflow-hidden border border-border mt-2 bg-black">
+                  <div className="p-1.5 bg-muted text-[11px] font-medium flex items-center gap-1.5 text-red-600">
+                    <Video className="h-3.5 w-3.5" />
+                    <span>{isAr ? 'معاينة فيديو الشرح:' : 'Video Preview:'}</span>
+                  </div>
+                  <div className="relative aspect-video">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${getYouTubeId(resourceLink)}`}
+                      title="YouTube explanation preview"
+                      className="w-full h-full"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Type + Max Score */}

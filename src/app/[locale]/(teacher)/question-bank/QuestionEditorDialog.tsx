@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { X, Plus, Trash2, CheckCircle2 } from 'lucide-react'
+import { X, Plus, Trash2, CheckCircle2, Sparkles } from 'lucide-react'
 import { createQuestionAction, updateQuestionAction } from '../exams/actions'
+import { MathFormula } from '@/components/ui/MathFormula'
 
 type QuestionType = 'mcq' | 'true_false' | 'short_answer' | 'essay'
 
@@ -193,16 +194,32 @@ export function QuestionEditorDialog({ open, onClose, onSaved, locale, question 
 
           {/* Body */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">
-              {isAr ? 'نص السؤال' : 'Question'} <span className="text-destructive">*</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">
+                {isAr ? 'نص السؤال' : 'Question'} <span className="text-destructive">*</span>
+              </label>
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-accent" />
+                {isAr ? 'يدعم صيغ LaTeX و الرياضيات' : 'Supports LaTeX math formulas'}
+              </span>
+            </div>
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={3}
-              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm resize-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              placeholder={isAr ? 'اكتب نص السؤال...' : 'Write the question text...'}
+              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm resize-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring font-mono"
+              placeholder={isAr ? 'اكتب نص السؤال... مثل: Find \\int x^2 dx أو F = ma' : 'Write question text... e.g. Find \\int x^2 dx or F = ma'}
             />
+            {body.trim() && (
+              <div className="rounded-md border border-border/60 bg-muted/30 p-2.5">
+                <p className="text-[11px] font-semibold text-muted-foreground mb-1 uppercase tracking-wider">
+                  {isAr ? 'معاينة الصيغة الرياضية:' : 'Live Math Preview:'}
+                </p>
+                <div className="text-sm">
+                  <MathFormula math={body} block />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Options (MCQ / True-False) */}
@@ -312,11 +329,35 @@ export function QuestionEditorDialog({ open, onClose, onSaved, locale, question 
             </div>
             <div className="space-y-1.5">
               <label className="text-sm font-medium">{isAr ? 'المادة' : 'Subject'}</label>
+              <div className="flex gap-1.5 mb-1.5">
+                <button
+                  type="button"
+                  onClick={() => setSubject(isAr ? 'فيزياء' : 'Physics')}
+                  className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                    subject === 'Physics' || subject === 'فيزياء'
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'border-border hover:bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {isAr ? 'فيزياء' : 'Physics'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSubject(isAr ? 'رياضيات' : 'Mathematics')}
+                  className={`text-xs px-2 py-0.5 rounded border transition-colors ${
+                    subject === 'Mathematics' || subject === 'رياضيات'
+                      ? 'bg-purple-600 text-white border-purple-600'
+                      : 'border-border hover:bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {isAr ? 'رياضيات' : 'Math'}
+                </button>
+              </div>
               <input
                 type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                placeholder={isAr ? 'مثال: رياضيات' : 'e.g., Math'}
+                placeholder={isAr ? 'أو اكتب مادة أخرى...' : 'or custom subject...'}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </div>
